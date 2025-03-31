@@ -1,11 +1,13 @@
 import aiomysql
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from pydantic import BaseModel, Field
 import bcrypt
-import asyncio
+import jwt
 
-from config import host, user, main_password, db_name
+from config import host, db_user, db_password, db_name, AuthJWT
+from utils import hash_password, check_password, \
+    encode_JWT, decode_JWT
 
 # Асинхронная функция подключения к базе данных
 async def database_connect():
@@ -13,26 +15,17 @@ async def database_connect():
         return await aiomysql.connect(
             host=host,
             port=3306,
-            user=user,
-            password=main_password,
+            user=db_user,
+            password=db_password,
             db=db_name,
             cursorclass=aiomysql.cursors.DictCursor
         )
     except aiomysql.MySQLError as ex:
         raise HTTPException(status_code=500, detail=f"Database error: {ex}")
 
-# Хэширование пароля
-def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed_password
+app = FastAPI(prefix="/api")
 
-# Проверка пароля
-def check_password(stored_hash: str, password: str) -> bool:
-    stored_hash = stored_hash.encode('utf-8')
-    return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
-
-app = FastAPI()
+router = APIRouter(prefix="/jwt", tags=["JWT"])
 
 class AddUserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
@@ -43,7 +36,7 @@ class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
 
-@app.post("/api/users/create", tags=["Users"])
+@app.post("/users/create/", tags=["Users"])
 async def add_user(new_user: AddUserSchema):
     connection = None
     try:
@@ -55,13 +48,13 @@ async def add_user(new_user: AddUserSchema):
                 raise HTTPException(status_code=400, detail="Login already exists")
             hash_pass = hash_password(new_user.user_password)
             await cursor.execute("""INSERT INTO `users` (user_name, login, password) VALUES (%s, %s, %s)""",
-                                  (new_user.user_name, new_user.login, hash_pass))
+                                  (new_user.user_name.strip().title(), new_user.login, hash_pass))
             await connection.commit()
             return {"message": "User added successfully"}
     finally:
         if connection: connection.close()
 
-@app.post("/api/users/login", tags=["Users"])
+@app.post("/api/users/login/", tags=["Users"])
 async def login_user(authorized_user: LoginUserSchema):
     connection = None
     try:
@@ -77,7 +70,7 @@ async def login_user(authorized_user: LoginUserSchema):
     finally:
         if connection: connection.close()
 
-@app.get("/api/users", tags = ["Users"])
+@app.get("/api/users/", tags = ["Users"])
 async def get_users():
     connection = None
     try:
@@ -91,7 +84,7 @@ async def get_users():
     finally:
         if connection: connection.close()
 
-@app.get("/api/users/{user_id}", tags = ["Users"])
+@app.get("/api/users/{user_id}/", tags = ["Users"])
 async def get_user(user_id: int):
     connection = None
     try:
@@ -105,7 +98,7 @@ async def get_user(user_id: int):
     finally:
         if connection: connection.close()
 
-@app.delete("/api/users/{user_id}", tags = ["Users"])
+@app.delete("/api/users/{user_id}/", tags = ["Users"])
 async def delete_user(user_id: int):
     connection = None
     try:
@@ -124,7 +117,7 @@ async def delete_user(user_id: int):
 class AddGroupSchema(BaseModel):
     group_name: str = Field(min_length = 1, max_length = 255)
 
-@app.post("/api/groups/create", tags = ["Groups"])
+@app.post("/api/groups/create/", tags = ["Groups"])
 async def add_group(new_group: AddGroupSchema):
     connection = None
     try:
