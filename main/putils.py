@@ -1,7 +1,8 @@
 import bcrypt
 import jwt
+from datetime import timedelta, datetime
 
-from main.config import AuthJWT
+from config import auth_jwt
 
 # Хэширование пароля
 def hash_password(password: str) -> str:
@@ -16,16 +17,28 @@ def check_password(stored_hash: str, password: str) -> bool:
 
 def encode_JWT(
         payload: dict, 
-        private_key: str = AuthJWT.private_key_path.read_text(), 
-        algorithm: str = AuthJWT.algorithm
+        private_key: str = auth_jwt.private_key_path.read_text(), 
+        algorithm: str = auth_jwt.algorithm,
+        expire_timedelta: timedelta | None = None,
+        expire_minutes: int = auth_jwt.access_token_expire_minutes,
 ):
+    to_encode = payload.copy()
+    now = datetime.utcnow()
+    if expire_timedelta:
+        expire = now + expire_timedelta
+    else:
+        expire = now + timedelta(minutes = expire_minutes)
+    to_encode.update(
+        exp = expire,
+        iat = now,
+        )
     encoded = jwt.encode(payload, private_key, algorithm=algorithm,)
     return encoded
 
 def decode_JWT(
         token: str | bytes, 
-        public_key: str = AuthJWT.public_key_path.read_text(), 
-        algorithm: str = AuthJWT.algorithm
+        public_key: str = auth_jwt.public_key_path.read_text(), 
+        algorithm: str = auth_jwt.algorithm
 ):
     decoded = jwt.decode(token, public_key, algorithms=[algorithm])
     return decoded

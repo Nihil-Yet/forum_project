@@ -5,9 +5,10 @@ from pydantic import BaseModel, Field
 import bcrypt
 import jwt
 
-from config import host, db_user, db_password, db_name, AuthJWT
-from utils import hash_password, check_password, \
+from config import host, db_user, db_password, db_name
+from putils import hash_password, check_password, \
     encode_JWT, decode_JWT
+
 
 # Асинхронная функция подключения к базе данных
 async def database_connect():
@@ -23,11 +24,11 @@ async def database_connect():
     except aiomysql.MySQLError as ex:
         raise HTTPException(status_code=500, detail=f"Database error: {ex}")
 
-app = FastAPI(prefix="/api")
+app = FastAPI()
 
 router = APIRouter(prefix="/jwt", tags=["JWT"])
 
-class AddUserSchema(BaseModel):
+class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
@@ -36,8 +37,8 @@ class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
 
-@app.post("/users/create/", tags=["Users"])
-async def add_user(new_user: AddUserSchema):
+@app.post("api/users/create/", tags=["Users"])
+async def add_user(new_user: UserSchema):
     connection = None
     try:
         connection = await database_connect()
@@ -55,7 +56,7 @@ async def add_user(new_user: AddUserSchema):
         if connection: connection.close()
 
 @app.post("/api/users/login/", tags=["Users"])
-async def login_user(authorized_user: LoginUserSchema):
+async def auth_user(authorized_user: LoginUserSchema):
     connection = None
     try:
         connection = await database_connect()
@@ -63,9 +64,9 @@ async def login_user(authorized_user: LoginUserSchema):
             await cursor.execute("""SELECT * FROM `users` WHERE `login` = %s;""", (authorized_user.login,))
             user = await cursor.fetchone()
             if not user:
-                raise HTTPException(status_code=400, detail="Invalid login or password")
+                raise HTTPException(status_code=401, detail="Invalid login or password")
             if not check_password(user['password'], authorized_user.user_password):
-                raise HTTPException(status_code=400, detail="Invalid login or password")
+                raise HTTPException(status_code=401, detail="Invalid login or password")
             return {"message": "Login successful"}
     finally:
         if connection: connection.close()
