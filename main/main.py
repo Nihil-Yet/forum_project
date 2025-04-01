@@ -37,7 +37,7 @@ class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
 
-@app.post("api/users/create/", tags=["Users"])
+@app.post("/api/users/create/", tags=["Users"])
 async def add_user(new_user: UserSchema):
     connection = None
     try:
@@ -73,7 +73,11 @@ async def auth_user(authorized_user: LoginUserSchema):
                 "username": user["user_name"]
                 }
             token = encode_JWT(jwt_payload)
-            return {"message": "Login successful", "JWT": token}
+            return {
+                "message": "Login successful", 
+                "access_JWT": token,
+                "token_type": "Byarer"
+                }
     finally:
         if connection: connection.close()
 
