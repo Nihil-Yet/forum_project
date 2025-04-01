@@ -18,7 +18,7 @@ def check_password(stored_hash: str, password: str) -> bool:
 def encode_JWT(
         payload: dict, 
         private_key: str = auth_jwt.private_key_path.read_text(), 
-        algorithm: str = auth_jwt.algorithm,
+        alg: str = auth_jwt.algorithm,
         expire_timedelta: timedelta | None = None,
         expire_minutes: int = auth_jwt.access_token_expire_minutes,
 ):
@@ -32,7 +32,7 @@ def encode_JWT(
         exp = expire,
         iat = now,
         )
-    encoded = jwt.encode(payload, private_key, algorithm=algorithm,)
+    encoded = jwt.encode(to_encode, private_key, algorithm=alg,)
     return encoded
 
 def decode_JWT(

@@ -6,8 +6,8 @@ import bcrypt
 import jwt
 
 from config import host, db_user, db_password, db_name
-from putils import hash_password, check_password, \
-    encode_JWT, decode_JWT
+from futils import hash_password, check_password, \
+    encode_JWT, decode_JWT, auth_jwt
 
 
 # Асинхронная функция подключения к базе данных
@@ -67,7 +67,13 @@ async def auth_user(authorized_user: LoginUserSchema):
                 raise HTTPException(status_code=401, detail="Invalid login or password")
             if not check_password(user['password'], authorized_user.user_password):
                 raise HTTPException(status_code=401, detail="Invalid login or password")
-            return {"message": "Login successful"}
+            jwt_payload = {
+                "sub": f"user_id: {user["id"]}",
+                "login": authorized_user.login,
+                "username": user["user_name"]
+                }
+            token = encode_JWT(jwt_payload)
+            return {"message": "Login successful", "JWT": token}
     finally:
         if connection: connection.close()
 
