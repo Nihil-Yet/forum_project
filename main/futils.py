@@ -1,7 +1,9 @@
+# установленные модули
 import bcrypt
 import jwt
 from datetime import timedelta, datetime
 
+# собственные модули
 from config import auth_jwt
 
 # Хэширование пароля
@@ -15,6 +17,7 @@ def check_password(stored_hash: str, password: str) -> bool:
     stored_hash = stored_hash.encode('utf-8')
     return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
 
+# создание токена
 def encode_JWT(
         payload: dict, 
         private_key: str = auth_jwt.private_key_path.read_text(), 
@@ -35,10 +38,11 @@ def encode_JWT(
     encoded = jwt.encode(to_encode, private_key, algorithm=alg,)
     return encoded
 
+# декодирование токена
 def decode_JWT(
         token: str | bytes, 
         public_key: str = auth_jwt.public_key_path.read_text(), 
-        algorithm: str = auth_jwt.algorithm
+        alg: str = auth_jwt.algorithm
 ):
-    decoded = jwt.decode(token, public_key, algorithms=[algorithm])
+    decoded = jwt.decode(token, public_key, algorithms=[alg])
     return decoded

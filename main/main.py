@@ -1,13 +1,13 @@
+# установленные модули
 import aiomysql
 import uvicorn
 from fastapi import FastAPI, HTTPException, APIRouter
 from pydantic import BaseModel, Field
-import bcrypt
-import jwt
 
+# собственные модули
 from config import host, db_user, db_password, db_name
 from futils import hash_password, check_password, \
-    encode_JWT, decode_JWT, auth_jwt
+    encode_JWT, decode_JWT
 
 
 # Асинхронная функция подключения к базе данных
@@ -28,15 +28,18 @@ app = FastAPI()
 
 router = APIRouter(prefix="/jwt", tags=["JWT"])
 
+# схема юзера для его добавления в БД
 class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
 
+# схема юзера для аутентификации/авторизации
 class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
     user_password: str = Field(min_length=8, max_length=100)
 
+# функция добавления юзера в БД
 @app.post("/api/users/create/", tags=["Users"])
 async def add_user(new_user: UserSchema):
     connection = None
@@ -55,6 +58,7 @@ async def add_user(new_user: UserSchema):
     finally:
         if connection: connection.close()
 
+# функция аутентификации/авторизации юзера
 @app.post("/api/users/login/", tags=["Users"])
 async def auth_user(authorized_user: LoginUserSchema):
     connection = None
@@ -76,11 +80,12 @@ async def auth_user(authorized_user: LoginUserSchema):
             return {
                 "message": "Login successful", 
                 "access_JWT": token,
-                "token_type": "Byarer"
+                "token_type": "Byarer",
                 }
     finally:
         if connection: connection.close()
 
+# функция получения информации о всех зарегестрированных пользователях
 @app.get("/api/users/", tags = ["Users"])
 async def get_users():
     connection = None
@@ -95,6 +100,7 @@ async def get_users():
     finally:
         if connection: connection.close()
 
+# функция получения информации о пользователе по его id
 @app.get("/api/users/{user_id}/", tags = ["Users"])
 async def get_user(user_id: int):
     connection = None
@@ -109,6 +115,7 @@ async def get_user(user_id: int):
     finally:
         if connection: connection.close()
 
+# функция удаления пользователя по его id
 @app.delete("/api/users/{user_id}/", tags = ["Users"])
 async def delete_user(user_id: int):
     connection = None
@@ -125,9 +132,11 @@ async def delete_user(user_id: int):
     finally:
         if connection: connection.close()
 
+# схема для добавления группы
 class AddGroupSchema(BaseModel):
     group_name: str = Field(min_length = 1, max_length = 255)
 
+# функция добавления группы
 @app.post("/api/groups/create/", tags = ["Groups"])
 async def add_group(new_group: AddGroupSchema):
     connection = None

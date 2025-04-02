@@ -9,7 +9,7 @@ db_password = "Mh8-9q-1#U?Jlei_NvSL!p"
 db_name = "db_forum"
 
 class AuthJWT(BaseModel):
-    private_key_path: str = BASE_DIR / "certs" / "jwt-private.pem"
+    private_key_path: Path = BASE_DIR / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
     access_token_expire_minutes: int = 3
