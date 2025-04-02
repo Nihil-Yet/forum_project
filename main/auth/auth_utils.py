@@ -1,7 +1,13 @@
 # установленные модули
 import bcrypt
 import jwt
+from jwt.exceptions import InvalidTokenError
 from datetime import timedelta, datetime
+from fastapi import HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # собственные модули
 from config import auth_jwt
@@ -44,5 +50,18 @@ def decode_JWT(
         public_key: str = auth_jwt.public_key_path.read_text(), 
         alg: str = auth_jwt.algorithm
 ):
-    decoded = jwt.decode(token, public_key, algorithms=[alg])
-    return decoded
+    try:
+        decoded = jwt.decode(token, public_key, algorithms=[alg])
+        return decoded
+    except InvalidTokenError as ex:
+        logging.error(f"{ex}")
+        raise HTTPException(status_code=401, detail=f"Invalid token error")
+
+http_bearer = HTTPBearer()
+# расшифровка токена
+def get_jwt_payload(
+        credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+):
+    token = credentials.credentials
+    payload = decode_JWT(token=token)
+    return payload

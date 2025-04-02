@@ -1,24 +1,24 @@
 # установленные модули
 import aiomysql
 import uvicorn
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 # собственные модули
-from config import host, db_user, db_password, db_name
-from futils import hash_password, check_password, \
-    encode_JWT, decode_JWT
-
+from config import appSettings
+# from auth.auth_utils import hash_password, check_password, \
+#     encode_JWT, decode_JWT
+from auth import auth_utils
 
 # Асинхронная функция подключения к базе данных
 async def database_connect():
     try:
         return await aiomysql.connect(
-            host=host,
-            port=3306,
-            user=db_user,
-            password=db_password,
-            db=db_name,
+            host=appSettings.dbSettings.host,
+            port=appSettings.dbSettings.port,
+            user=appSettings.dbSettings.user,
+            password=appSettings.dbSettings.password,
+            db=appSettings.dbSettings.name,
             cursorclass=aiomysql.cursors.DictCursor
         )
     except aiomysql.MySQLError as ex:
@@ -26,18 +26,16 @@ async def database_connect():
 
 app = FastAPI()
 
-router = APIRouter(prefix="/jwt", tags=["JWT"])
-
 # схема юзера для его добавления в БД
 class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
-    user_password: str = Field(min_length=8, max_length=100)
+    password: str = Field(min_length=8, max_length=100)
 
 # схема юзера для аутентификации/авторизации
 class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
-    user_password: str = Field(min_length=8, max_length=100)
+    password: str = Field(min_length=8, max_length=100)
 
 # функция добавления юзера в БД
 @app.post("/api/users/create/", tags=["Users"])
@@ -50,7 +48,7 @@ async def add_user(new_user: UserSchema):
             user_login = await cursor.fetchone()
             if user_login:
                 raise HTTPException(status_code=400, detail="Login already exists")
-            hash_pass = hash_password(new_user.user_password)
+            hash_pass = auth_utils.hash_password(new_user.password)
             await cursor.execute("""INSERT INTO `users` (user_name, login, password) VALUES (%s, %s, %s)""",
                                   (new_user.user_name.strip().title(), new_user.login, hash_pass))
             await connection.commit()
@@ -69,14 +67,14 @@ async def auth_user(authorized_user: LoginUserSchema):
             user = await cursor.fetchone()
             if not user:
                 raise HTTPException(status_code=401, detail="Invalid login or password")
-            if not check_password(user['password'], authorized_user.user_password):
+            if not auth_utils.check_password(user['password'], authorized_user.password):
                 raise HTTPException(status_code=401, detail="Invalid login or password")
             jwt_payload = {
                 "sub": f"user_id: {user["id"]}",
                 "login": authorized_user.login,
                 "username": user["user_name"]
                 }
-            token = encode_JWT(jwt_payload)
+            token = auth_utils.encode_JWT(jwt_payload)
             return {
                 "message": "Login successful", 
                 "access_JWT": token,
@@ -84,6 +82,18 @@ async def auth_user(authorized_user: LoginUserSchema):
                 }
     finally:
         if connection: connection.close()
+
+
+# функция проверки аутентификации/авторизации юзера
+@app.get("/api/users/login_check/", tags=["Users"])
+async def check_auth_user(
+    user: UserSchema = Depends(auth_utils.get_jwt_payload)
+):
+    return {
+        "login": user["login"],
+        "username": user["username"],
+    }
+    
 
 # функция получения информации о всех зарегестрированных пользователях
 @app.get("/api/users/", tags = ["Users"])
@@ -102,16 +112,16 @@ async def get_users():
 
 # функция получения информации о пользователе по его id
 @app.get("/api/users/{user_id}/", tags = ["Users"])
-async def get_user(user_id: int):
+async def get_user(user_id: int) -> UserSchema:
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute("""SELECT * FROM `users` WHERE id = %s;""", (user_id,))
-            query_result = await cursor.fetchall()
+            query_result = await cursor.fetchone()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = f"user with id = {user_id} not found")
-            return query_result
+            return UserSchema(**query_result)
     finally:
         if connection: connection.close()
 
