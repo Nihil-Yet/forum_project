@@ -9,7 +9,7 @@ class DBSettings(BaseModel):
     host: str = "localhost"
     port: int = 3306
     user: str = "admin"
-    password: str = "Mh8-9q-1#U?Jlei_NvSL!p"
+    password: str = "admin"
     name: str = "db_forum"
 
 # настройки для создания токена
