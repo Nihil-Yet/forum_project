@@ -55,7 +55,7 @@ def decode_JWT(
         return decoded
     except InvalidTokenError as ex:
         logging.error(f"{ex}")
-        raise HTTPException(status_code=401, detail=f"Invalid token error")
+        raise HTTPException(status_code=401, detail="Invalid token error")
 
 http_bearer = HTTPBearer()
 # получение значений токена
