@@ -10,7 +10,7 @@ from config import appSettings
 #     encode_JWT, decode_JWT
 from auth import auth_utils
 
-# Асинхронная функция подключения к базе данных
+# функция подключения к базе данных
 async def database_connect():
     try:
         return await aiomysql.connect(
@@ -30,6 +30,8 @@ app = FastAPI()
 class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
+
+class AddUserSchema(UserSchema):
     password: str = Field(min_length=8, max_length=100)
 
 # схема юзера для аутентификации/авторизации
@@ -39,7 +41,7 @@ class LoginUserSchema(BaseModel):
 
 # функция добавления юзера в БД
 @app.post("/api/users/create/", tags=["Users"])
-async def add_user(new_user: UserSchema):
+async def add_user(new_user: AddUserSchema):
     connection = None
     try:
         connection = await database_connect()
@@ -105,7 +107,7 @@ async def get_users():
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users`;""")
+            await cursor.execute("""SELECT `id`, `user_name`, `login` FROM `users`;""")
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "users are not found")

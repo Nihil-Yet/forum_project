@@ -12,13 +12,13 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 # собственные модули
 from config import auth_jwt
 
-# Хэширование пароля
+# хэширование пароля
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password
 
-# Проверка пароля
+# проверка пароля
 def check_password(stored_hash: str, password: str) -> bool:
     stored_hash = stored_hash.encode('utf-8')
     return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
@@ -58,7 +58,7 @@ def decode_JWT(
         raise HTTPException(status_code=401, detail=f"Invalid token error")
 
 http_bearer = HTTPBearer()
-# расшифровка токена
+# получение значений токена
 def get_jwt_payload(
         credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
 ):
