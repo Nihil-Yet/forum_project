@@ -70,7 +70,8 @@ async def auth_user(authorized_user: LoginUserSchema):
             if not auth_utils.check_password(user['password'], authorized_user.password):
                 raise HTTPException(status_code=401, detail="Invalid login or password")
             jwt_payload = {
-                "sub": f"user_id: {user["id"]}",
+                "sub": "user",
+                "id": user["id"],
                 "login": authorized_user.login,
                 "username": user["user_name"]
                 }
@@ -87,11 +88,13 @@ async def auth_user(authorized_user: LoginUserSchema):
 # функция проверки аутентификации/авторизации юзера
 @app.get("/api/users/login_check/", tags=["Users"])
 async def check_auth_user(
-    user: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
 ):
     return {
-        "login": user["login"],
-        "username": user["username"],
+        "sub": user_token["sub"],
+        "id": user_token["id"],
+        "login": user_token["login"],
+        "username": user_token["username"],
     }
     
 
