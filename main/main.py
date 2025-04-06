@@ -37,7 +37,7 @@ class AddUserSchema(UserSchema):
 # схема юзера для аутентификации/авторизации
 class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
-    password: str = Field(min_length=8, max_length=100)
+    password: str = Field(max_length=100)
 
 # функция добавления юзера в БД
 @app.post("/api/users/create/", tags=["Users"])
