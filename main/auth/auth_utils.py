@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # собственные модули
-from config import auth_jwt
+from settings.config import auth_jwt
 
 # хэширование пароля
 def hash_password(password: str) -> str:
