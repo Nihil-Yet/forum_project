@@ -16,31 +16,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `tag_post`
+-- Table structure for table `user_group`
 --
 
-DROP TABLE IF EXISTS `tag_post`;
+DROP TABLE IF EXISTS `user_group`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tag_post` (
+CREATE TABLE `user_group` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `tag_id` int NOT NULL,
-  `post_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `group_id` int NOT NULL,
+  `role_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `tag_id` (`tag_id`),
-  KEY `post_id` (`post_id`),
-  CONSTRAINT `tag_post_ibfk_1` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`),
-  CONSTRAINT `tag_post_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
+  KEY `user_id` (`user_id`),
+  KEY `group_id` (`group_id`),
+  KEY `fk_role_id` (`role_id`),
+  CONSTRAINT `fk_role_id` FOREIGN KEY (`role_id`) REFERENCES `group_role` (`id`),
+  CONSTRAINT `user_group_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `user_group_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `tag_post`
+-- Dumping data for table `user_group`
 --
 
-LOCK TABLES `tag_post` WRITE;
-/*!40000 ALTER TABLE `tag_post` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tag_post` ENABLE KEYS */;
+LOCK TABLES `user_group` WRITE;
+/*!40000 ALTER TABLE `user_group` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_group` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -52,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-03 20:05:05
+-- Dump completed on 2025-04-08  0:23:25

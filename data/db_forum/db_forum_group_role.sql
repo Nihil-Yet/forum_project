@@ -16,31 +16,27 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `user_group`
+-- Table structure for table `group_role`
 --
 
-DROP TABLE IF EXISTS `user_group`;
+DROP TABLE IF EXISTS `group_role`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_group` (
+CREATE TABLE `group_role` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `group_id` int NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `group_id` (`group_id`),
-  CONSTRAINT `user_group_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  CONSTRAINT `user_group_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `role_name` varchar(16) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_group`
+-- Dumping data for table `group_role`
 --
 
-LOCK TABLES `user_group` WRITE;
-/*!40000 ALTER TABLE `user_group` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_group` ENABLE KEYS */;
+LOCK TABLES `group_role` WRITE;
+/*!40000 ALTER TABLE `group_role` DISABLE KEYS */;
+INSERT INTO `group_role` VALUES (1,'админ'),(2,'модератор'),(3,'пользователь');
+/*!40000 ALTER TABLE `group_role` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -52,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-03 20:05:05
+-- Dump completed on 2025-04-08  0:23:25
