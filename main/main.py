@@ -6,8 +6,6 @@ from pydantic import BaseModel, Field
 
 # собственные модули
 from config import appSettings
-# from auth.auth_utils import hash_password, check_password, \
-#     encode_JWT, decode_JWT
 from auth import auth_utils
 
 # функция подключения к базе данных
