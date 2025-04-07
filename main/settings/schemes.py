@@ -16,5 +16,6 @@ class LoginUserSchema(BaseModel):
 
 
 # схема для добавления группы
+# !!! ПЕРЕДЕЛАТЬ !!! по образу UserSchema
 class AddGroupSchema(BaseModel):
     group_name: str = Field(min_length = 1, max_length = 255)
