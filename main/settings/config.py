@@ -2,14 +2,14 @@ from pydantic import BaseModel
 from pathlib import Path
 
 # путь к main/
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).parent.parent
 
 # настройки для создания БД
 class DBSettings(BaseModel):
     host: str = "localhost"
     port: int = 3306
-    user: str = "admin"
-    password: str = "admin"
+    user: str = "data_admin"
+    password: str = "data_admin"
     name: str = "db_forum"
 
 # настройки для создания токена

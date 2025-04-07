@@ -1,63 +1,40 @@
 # установленные модули
-import aiomysql
-import uvicorn
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 # собственные модули
-from config import appSettings
+from settings.database import database_connect
+from settings.config import appSettings
 from auth import auth_utils
+from settings.schemes import UserSchema, AddUserSchema, LoginUserSchema
 
-# функция подключения к базе данных
-async def database_connect():
-    try:
-        return await aiomysql.connect(
-            host=appSettings.dbSettings.host,
-            port=appSettings.dbSettings.port,
-            user=appSettings.dbSettings.user,
-            password=appSettings.dbSettings.password,
-            db=appSettings.dbSettings.name,
-            cursorclass=aiomysql.cursors.DictCursor
-        )
-    except aiomysql.MySQLError as ex:
-        raise HTTPException(status_code=500, detail=f"Database error: {ex}")
-
-app = FastAPI()
-
-# схема юзера для его добавления в БД
-class UserSchema(BaseModel):
-    user_name: str = Field(min_length=1, max_length=255)
-    login: str = Field(min_length=1, max_length=255)
-
-class AddUserSchema(UserSchema):
-    password: str = Field(min_length=8, max_length=100)
-
-# схема юзера для аутентификации/авторизации
-class LoginUserSchema(BaseModel):
-    login: str = Field(min_length=1, max_length=255)
-    password: str = Field(max_length=100)
+routerUsers = APIRouter()
 
 # функция добавления юзера в БД
-@app.post("/api/users/create/", tags=["Users"])
+@routerUsers.post("/users/create/")
 async def add_user(new_user: AddUserSchema):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute("""SELECT `id` FROM `users` WHERE `login` = %s""", (new_user.login,))
-            user_login = await cursor.fetchone()
-            if user_login:
-                raise HTTPException(status_code=400, detail="Login already exists")
+            login_exist = await cursor.fetchone()
+            if login_exist:
+                raise HTTPException(status_code=409, detail="Login already exists")
+            await cursor.execute("""SELECT `id` FROM `users` WHERE `email` = %s""", (new_user.email,))
+            email_exist = await cursor.fetchone()
+            if email_exist:
+                raise HTTPException(status_code=409, detail="Email already used")
             hash_pass = auth_utils.hash_password(new_user.password)
-            await cursor.execute("""INSERT INTO `users` (user_name, login, password) VALUES (%s, %s, %s)""",
-                                  (new_user.user_name.strip().title(), new_user.login, hash_pass))
+            await cursor.execute("""INSERT INTO `users` (user_name, login, password, email) VALUES (%s, %s, %s, %s)""",
+                                  (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
             await connection.commit()
             return {"message": "User added successfully"}
     finally:
         if connection: connection.close()
 
 # функция аутентификации/авторизации юзера
-@app.post("/api/users/login/", tags=["Users"])
+@routerUsers.post("/users/login/")
 async def auth_user(authorized_user: LoginUserSchema):
     connection = None
     try:
@@ -73,7 +50,8 @@ async def auth_user(authorized_user: LoginUserSchema):
                 "sub": "user",
                 "id": user["id"],
                 "login": authorized_user.login,
-                "username": user["user_name"]
+                "username": user["user_name"],
+                "email": user["email"],
                 }
             token = auth_utils.encode_JWT(jwt_payload)
             return {
@@ -86,7 +64,7 @@ async def auth_user(authorized_user: LoginUserSchema):
 
 
 # функция проверки аутентификации/авторизации юзера
-@app.get("/api/users/login_check/", tags=["Users"])
+@routerUsers.get("/users/login_check/")
 async def check_auth_user(
     user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
 ):
@@ -95,17 +73,18 @@ async def check_auth_user(
         "id": user_token["id"],
         "login": user_token["login"],
         "username": user_token["username"],
+        "email": user_token["email"],
     }
     
 
 # функция получения информации о всех зарегестрированных пользователях
-@app.get("/api/users/", tags = ["Users"])
+@routerUsers.get("/users/")
 async def get_users():
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id`, `user_name`, `login` FROM `users`;""")
+            await cursor.execute("""SELECT `id`, `user_name`, `login`, `email` FROM `users`;""")
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "users are not found")
@@ -114,7 +93,7 @@ async def get_users():
         if connection: connection.close()
 
 # функция получения информации о пользователе по его id
-@app.get("/api/users/{user_id}/", tags = ["Users"])
+@routerUsers.get("/users/{user_id}/")
 async def get_user(user_id: int) -> UserSchema:
     connection = None
     try:
@@ -129,7 +108,7 @@ async def get_user(user_id: int) -> UserSchema:
         if connection: connection.close()
 
 # функция удаления пользователя по его id
-@app.delete("/api/users/{user_id}/", tags = ["Users"])
+@routerUsers.delete("/users/{user_id}/")
 async def delete_user(user_id: int):
     connection = None
     try:
@@ -144,24 +123,3 @@ async def delete_user(user_id: int):
             return {"message": "User delete succesfully"}
     finally:
         if connection: connection.close()
-
-# схема для добавления группы
-class AddGroupSchema(BaseModel):
-    group_name: str = Field(min_length = 1, max_length = 255)
-
-# функция добавления группы
-@app.post("/api/groups/create/", tags = ["Groups"])
-async def add_group(new_group: AddGroupSchema):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""INSERT INTO `groups` (group_name) VALUES (%s)""", 
-                                 (new_group.group_name,))
-            await connection.commit()
-            return {"message": "User added succesfully"}
-    finally:
-        if connection: connection.close()
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", reload = True)
