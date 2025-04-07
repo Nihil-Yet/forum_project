@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # собственные модули
-from settings.config import auth_jwt
+from settings.config import appSettings
 
 # хэширование пароля
 def hash_password(password: str) -> str:
@@ -26,10 +26,10 @@ def check_password(stored_hash: str, password: str) -> bool:
 # создание токена
 def encode_JWT(
         payload: dict, 
-        private_key: str = auth_jwt.private_key_path.read_text(), 
-        alg: str = auth_jwt.algorithm,
+        private_key: str = appSettings.authJWT.private_key_path.read_text(), 
+        alg: str = appSettings.authJWT.algorithm,
         expire_timedelta: timedelta | None = None,
-        expire_minutes: int = auth_jwt.access_token_expire_minutes,
+        expire_minutes: int = appSettings.authJWT.access_token_expire_minutes,
 ):
     to_encode = payload.copy()
     now = datetime.utcnow()
@@ -47,8 +47,8 @@ def encode_JWT(
 # декодирование токена
 def decode_JWT(
         token: str | bytes, 
-        public_key: str = auth_jwt.public_key_path.read_text(), 
-        alg: str = auth_jwt.algorithm
+        public_key: str = appSettings.authJWT.public_key_path.read_text(), 
+        alg: str = appSettings.authJWT.algorithm
 ):
     try:
         decoded = jwt.decode(token, public_key, algorithms=[alg])
