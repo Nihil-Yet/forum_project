@@ -1,11 +1,9 @@
 # установленные модули
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
+import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.config import appSettings
-from auth import auth_utils
 from settings.schemes import AddGroupSchema
 
 routerGroups = APIRouter()

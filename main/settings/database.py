@@ -1,6 +1,7 @@
 # установленные модули
 import aiomysql
 from fastapi import HTTPException
+import logging
 
 # собственные модули
 from settings.config import appSettings
