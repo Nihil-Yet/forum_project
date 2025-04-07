@@ -13,3 +13,8 @@ class AddUserSchema(UserSchema):
 class LoginUserSchema(BaseModel):
     login: str = Field(min_length=1, max_length=255)
     password: str = Field(max_length=100)
+
+
+# схема для добавления группы
+class AddGroupSchema(BaseModel):
+    group_name: str = Field(min_length = 1, max_length = 255)

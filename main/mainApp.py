@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 # собственные модули
 from settings.config import appSettings
 from auth import auth_utils
-from settings.schemes import UserSchema, AddUserSchema, LoginUserSchema
+from settings.schemes import UserSchema, AddUserSchema, LoginUserSchema, AddGroupSchema
 
 # функция подключения к базе данных
 async def database_connect():
@@ -133,9 +133,6 @@ async def delete_user(user_id: int):
     finally:
         if connection: connection.close()
 
-# схема для добавления группы
-class AddGroupSchema(BaseModel):
-    group_name: str = Field(min_length = 1, max_length = 255)
 
 # функция добавления группы
 @app.post("/api/groups/create/", tags = ["Groups"])
