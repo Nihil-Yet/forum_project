@@ -18,9 +18,13 @@ async def add_user(new_user: AddUserSchema):
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute("""SELECT `id` FROM `users` WHERE `login` = %s""", (new_user.login,))
-            user_login = await cursor.fetchone()
-            if user_login:
+            login_exist = await cursor.fetchone()
+            if login_exist:
                 raise HTTPException(status_code=409, detail="Login already exists")
+            await cursor.execute("""SELECT `id` FROM `users` WHERE `email` = %s""", (new_user.email,))
+            email_exist = await cursor.fetchone()
+            if email_exist:
+                raise HTTPException(status_code=409, detail="Email already used")
             hash_pass = auth_utils.hash_password(new_user.password)
             await cursor.execute("""INSERT INTO `users` (user_name, login, password, email) VALUES (%s, %s, %s, %s)""",
                                   (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
@@ -46,7 +50,8 @@ async def auth_user(authorized_user: LoginUserSchema):
                 "sub": "user",
                 "id": user["id"],
                 "login": authorized_user.login,
-                "username": user["user_name"]
+                "username": user["user_name"],
+                "email": user["email"],
                 }
             token = auth_utils.encode_JWT(jwt_payload)
             return {
@@ -68,6 +73,7 @@ async def check_auth_user(
         "id": user_token["id"],
         "login": user_token["login"],
         "username": user_token["username"],
+        "email": user_token["email"],
     }
     
 
@@ -78,7 +84,7 @@ async def get_users():
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id`, `user_name`, `login` FROM `users`;""")
+            await cursor.execute("""SELECT `id`, `user_name`, `login`, `email` FROM `users`;""")
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "users are not found")
