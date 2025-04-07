@@ -22,8 +22,8 @@ async def add_user(new_user: AddUserSchema):
             if user_login:
                 raise HTTPException(status_code=409, detail="Login already exists")
             hash_pass = auth_utils.hash_password(new_user.password)
-            await cursor.execute("""INSERT INTO `users` (user_name, login, password) VALUES (%s, %s, %s)""",
-                                  (new_user.user_name.strip().title(), new_user.login, hash_pass))
+            await cursor.execute("""INSERT INTO `users` (user_name, login, password, email) VALUES (%s, %s, %s, %s)""",
+                                  (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
             await connection.commit()
             return {"message": "User added successfully"}
     finally:

@@ -1,10 +1,11 @@
 # установленные модули
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 # схема юзера для его добавления в БД
 class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
+    email: EmailStr
 
 class AddUserSchema(UserSchema):
     password: str = Field(min_length=8, max_length=100)
