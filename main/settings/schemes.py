@@ -20,3 +20,11 @@ class LoginUserSchema(BaseModel):
 class GroupSchema(BaseModel):
     group_name: str = Field(min_length = 1, max_length = 255)
     description: str = Field(max_length=1024)
+
+# схема пользователя в группе
+class GroupMember(BaseModel):
+    user_id: int
+    group_id: int
+
+class JoinGroupMember(GroupMember):
+    role_id: int = 3
