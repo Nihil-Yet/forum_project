@@ -1,4 +1,5 @@
 # установленные модули
+import aiomysql
 from fastapi import APIRouter, HTTPException, Depends
 import logging
 
@@ -30,6 +31,8 @@ async def add_user(new_user: AddUserSchema):
                                   (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
             await connection.commit()
             return {"message": "User added successfully"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
 
@@ -59,6 +62,8 @@ async def auth_user(authorized_user: LoginUserSchema):
                 "access_JWT": token,
                 "token_type": "Byarer",
                 }
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
 
@@ -89,6 +94,8 @@ async def get_users():
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "users are not found")
             return query_result
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
 
@@ -104,6 +111,8 @@ async def get_user(user_id: int) -> UserSchema:
             if not query_result:
                 raise HTTPException(status_code = 404, detail = f"user with id = {user_id} not found")
             return UserSchema(**query_result)
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
 
@@ -121,5 +130,7 @@ async def delete_user(user_id: int):
             await cursor.execute("""DELETE FROM `users` WHERE `id` = %s;""", (user_id,))
             await connection.commit()
             return {"message": "User delete succesfully"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
