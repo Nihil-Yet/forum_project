@@ -18,4 +18,5 @@ async def database_connect():
             cursorclass=aiomysql.cursors.DictCursor
         )
     except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
         raise HTTPException(status_code=500, detail=f"Database error: {ex}")

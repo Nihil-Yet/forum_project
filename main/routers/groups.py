@@ -42,7 +42,7 @@ async def get_groups():
     finally:
         if connection: connection.close()
 
-# функция получения информации о пользователе по его id
+# функция получения информации о группе по id
 @routerGroups.get("/groups/{group_id}/")
 async def get_group(group_id: int) -> GroupSchema:
     connection = None
@@ -57,7 +57,7 @@ async def get_group(group_id: int) -> GroupSchema:
     finally:
         if connection: connection.close()
 
-# функция получения информации о пользователе по его id
+# функция удаления группы по id
 @routerGroups.delete("/groups/{group_id}/")
 async def delete_group(group_id: int):
     connection = None
