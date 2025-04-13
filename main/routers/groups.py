@@ -1,10 +1,11 @@
 # установленные модули
+import aiomysql
 from fastapi import APIRouter, HTTPException, Depends
 import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import GroupSchema
+from settings.schemes import GroupSchema, GroupMember, JoinGroupMember
 
 routerGroups = APIRouter()
 
@@ -20,12 +21,84 @@ async def add_group(new_group: GroupSchema):
             group_exist = await cursor.fetchone()
             if group_exist:
                 raise HTTPException(status_code=409, detail="This group name already used")
-            await cursor.execute("""INSERT INTO `groups` (group_name, description) VALUES (%s, %s)""", 
+            await cursor.execute("""INSERT INTO `groups` (group_name, description) VALUES (%s, %s);""", 
                                  (new_group.group_name, new_group.description))
             await connection.commit()
             return {"message": "Group added succesfully"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
-        if connection: connection.close()
+        if connection:
+            await connection.close()
+
+# функция вступления в группу
+@routerGroups.post("/groups/members/join/")
+async def joining_member(new_member: JoinGroupMember):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s""",
+                                 (new_member.user_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail=f"User with id = {new_member.user_id} not found")
+            await cursor.execute("""SELECT * FROM `groups` WHERE `id` = %s""",
+                                 (new_member.group_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail=f"Group with id = {new_member.group_id} not found")
+            await cursor.execute("""SELECT `id` FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s;""",
+                                 (new_member.user_id, new_member.group_id,))
+            if await cursor.fetchone():
+                raise HTTPException(status_code=409, detail="This user is already a member of this group")
+            await cursor.execute("""INSERT INTO `user_group` (user_id, group_id, role_id) VALUES (%s, %s, %s);""",
+                                 (new_member.user_id, new_member.group_id, new_member.role_id,))
+            await connection.commit()
+            return {"message": "User has successfully joined the group"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
+    finally:
+        if connection: 
+            connection.close()
+
+# функция выхода из группы
+@routerGroups.post("/groups/members/left/")
+async def left_member(left_member: GroupMember):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `id` FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s;""",
+                                 (left_member.user_id, left_member.group_id,))
+            isUser = await cursor.fetchone()
+            if not isUser:
+                raise HTTPException(status_code=404, detail=f"User with id = {left_member.user_id} not found in group with id = {left_member.group_id} or this group not exist")
+            await cursor.execute("""DELETE FROM `user_group` WHERE `id` = %s""", (isUser["id"],))
+            await connection.commit()
+            return {"message": "User has successfully left the group"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
+    finally:
+        if connection:
+            connection.close()
+
+# функция получения информации о всех членах группы по её id
+@routerGroups.get("/groups/members/{group_id}/")
+async def get_group_members(group_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `id` FROM `groups` WHERE `id` = %s""", (group_id))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Group not found")
+            await cursor.execute("""SELECT `id`, `user_id`, `role_id` FROM user_group WHERE `group_id` = %s""", (group_id,))
+            group_members = await cursor.fetchall()
+            if not group_members:
+                raise HTTPException(status_code = 404, detail = f"No members in the group with id = {group_id}")
+            return group_members
+    finally:
+        if connection:
+            connection.close()
 
 # функция получения информации о всех существующих группах
 @routerGroups.get("/groups/")
@@ -40,7 +113,8 @@ async def get_groups():
                 raise HTTPException(status_code = 404, detail = "groups are not found")
             return groups
     finally:
-        if connection: connection.close()
+        if connection:
+            connection.close()
 
 # функция получения информации о группе по id
 @routerGroups.get("/groups/{group_id}/")
@@ -54,8 +128,11 @@ async def get_group(group_id: int) -> GroupSchema:
             if not query_result:
                 raise HTTPException(status_code = 404, detail = f"group with id = {group_id} not found")
             return GroupSchema(**query_result)
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
-        if connection: connection.close()
+        if connection:
+            connection.close()
 
 # функция удаления группы по id
 @routerGroups.delete("/groups/{group_id}/")
@@ -71,5 +148,7 @@ async def delete_group(group_id: int):
             await cursor.execute("""DELETE FROM `groups` WHERE `id` = %s;""", (group_id,))
             await connection.commit()
             return {"message": "Group delete succesfully"}
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
     finally:
         if connection: connection.close()
