@@ -56,3 +56,20 @@ async def get_group(group_id: int) -> GroupSchema:
             return GroupSchema(**query_result)
     finally:
         if connection: connection.close()
+
+# функция получения информации о пользователе по его id
+@routerGroups.delete("/groups/{group_id}/")
+async def delete_group(group_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
+            query_result = await cursor.fetchone()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = f"group with id = {group_id} not found")
+            await cursor.execute("""DELETE FROM `groups` WHERE `id` = %s;""", (group_id,))
+            await connection.commit()
+            return {"message": "Group delete succesfully"}
+    finally:
+        if connection: connection.close()
