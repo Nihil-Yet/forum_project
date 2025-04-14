@@ -120,6 +120,25 @@ async def get_user(user_id: int) -> UserSchema:
     finally:
         if connection: connection.close()
 
+# функция получения информации о всех группах, в которых состоит пользователль
+@routerUsers.get("/users/{user_id}/groups/")
+async def get_user_groups(user_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `id` FROM `users` WHERE `id` = %s""", (user_id))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "User not found")
+            await cursor.execute("""SELECT `id`, `group_id`, `role_id` FROM user_group WHERE `user_id` = %s""", (user_id,))
+            user_groups = await cursor.fetchall()
+            if not user_groups:
+                raise HTTPException(status_code = 404, detail = f"User with id = {user_id} not in any group")
+            return user_groups
+    finally:
+        if connection:
+            connection.close()
+
 # функция удаления пользователя по его id
 @routerUsers.delete("/users/{user_id}/")
 async def delete_user(user_id: int):
