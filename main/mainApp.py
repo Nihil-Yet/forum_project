@@ -1,6 +1,7 @@
 # установленные модули
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # собственные модули
 
@@ -10,6 +11,19 @@ from routers.groups import routerGroups
 
 # Приложение
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=3600,  # Указывает, как долго браузер может кэшировать CORS-ответы
+)
 
 app.include_router(router=routerUsers, prefix="/api", tags=["Users"])
 app.include_router(router=routerGroups, prefix="/api", tags=["Groups"])
