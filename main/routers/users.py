@@ -150,6 +150,7 @@ async def delete_user(user_id: int):
             user = await cursor.fetchone()
             if not user:
                 raise HTTPException(status_code = 404, detail = f"user with id = {user_id} not found")
+            await cursor.execute("""DELETE FROM `user_group` WHERE `user_id` = %s""", (user_id,))
             await cursor.execute("""DELETE FROM `users` WHERE `id` = %s;""", (user_id,))
             await connection.commit()
             return {"message": "User delete succesfully"}
