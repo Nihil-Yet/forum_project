@@ -35,6 +35,40 @@ async def add_group(new_group: GroupSchema):
         if connection:
             await connection.close()
 
+# функция получения информации о всех существующих группах
+@routerGroups.get("/groups/")
+async def get_groups():
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `id`, `group_name`, `description` FROM `groups`""")
+            groups = await cursor.fetchall()
+            if not groups:
+                raise HTTPException(status_code = 404, detail = "groups are not found")
+            return groups
+    finally:
+        if connection:
+            connection.close()
+
+# функция получения информации о группе по id
+@routerGroups.get("/groups/{group_id}/")
+async def get_group(group_id: int) -> GroupSchema:
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
+            query_result = await cursor.fetchone()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = f"group with id = {group_id} not found")
+            return GroupSchema(**query_result)
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
+    finally:
+        if connection:
+            connection.close()
+
 # функция вступления в группу
 @routerGroups.post("/groups/members/join/")
 async def joining_member(new_member: JoinGroupMember):
@@ -86,7 +120,7 @@ async def left_member(left_member: GroupMember):
             connection.close()
 
 # функция получения информации о всех членах группы по её id
-@routerGroups.get("/groups/members/{group_id}/")
+@routerGroups.get("/groups/{group_id}/members/")
 async def get_group_members(group_id: int):
     connection = None
     try:
@@ -100,40 +134,6 @@ async def get_group_members(group_id: int):
             if not group_members:
                 raise HTTPException(status_code = 404, detail = f"No members in the group with id = {group_id}")
             return group_members
-    finally:
-        if connection:
-            connection.close()
-
-# функция получения информации о всех существующих группах
-@routerGroups.get("/groups/")
-async def get_groups():
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id`, `group_name`, `description` FROM `groups`""")
-            groups = await cursor.fetchall()
-            if not groups:
-                raise HTTPException(status_code = 404, detail = "groups are not found")
-            return groups
-    finally:
-        if connection:
-            connection.close()
-
-# функция получения информации о группе по id
-@routerGroups.get("/groups/{group_id}/")
-async def get_group(group_id: int) -> GroupSchema:
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
-            query_result = await cursor.fetchone()
-            if not query_result:
-                raise HTTPException(status_code = 404, detail = f"group with id = {group_id} not found")
-            return GroupSchema(**query_result)
-    except aiomysql.MySQLError as ex:
-        logging.error(f"{ex}")
     finally:
         if connection:
             connection.close()
