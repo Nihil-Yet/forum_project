@@ -30,12 +30,10 @@ async def add_user(new_user: AddUserSchema):
             await cursor.execute("""INSERT INTO `users` (user_name, login, password, email) VALUES (%s, %s, %s, %s)""",
                                   (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
             await connection.commit()
-            user_id = cursor.lastrowid
-            # await cursor.execute("SELECT id, user_name, login, email FROM users WHERE id = %s", (user_id,))
-            # user_data = await cursor.fetchone()
+            new_user_id = cursor.lastrowid
             return {
                 "message": "User added successfully",
-                "user_id": user_id
+                "user_id": new_user_id,
             }
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
