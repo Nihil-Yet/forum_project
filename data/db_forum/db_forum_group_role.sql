@@ -28,16 +28,6 @@ CREATE TABLE `group_role` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `group_role`
---
-
-LOCK TABLES `group_role` WRITE;
-/*!40000 ALTER TABLE `group_role` DISABLE KEYS */;
-INSERT INTO `group_role` VALUES (1,'админ'),(2,'модератор'),(3,'пользователь');
-/*!40000 ALTER TABLE `group_role` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -48,4 +38,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-08  0:56:23
+-- Dump completed on 2025-04-14 22:13:27
