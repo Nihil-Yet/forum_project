@@ -24,7 +24,11 @@ async def add_group(new_group: GroupSchema):
             await cursor.execute("""INSERT INTO `groups` (group_name, description) VALUES (%s, %s);""", 
                                  (new_group.group_name, new_group.description))
             await connection.commit()
-            return {"message": "Group added succesfully"}
+            new_group_id = cursor.lastrowid
+            return {
+                "message": "Group added succesfully",
+                "group_id": new_group_id,
+                }
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
     finally:
