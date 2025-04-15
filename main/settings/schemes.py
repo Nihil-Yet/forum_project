@@ -32,9 +32,9 @@ class JoinGroupMember(GroupMember):
 class PostSchema(BaseModel):
     user_id: int
     group_id: int
-    status_id: int
-    post_name: str
-    post_text: str
+    isUrgently: bool = 1
+    post_name: str = Field(min_length = 1, max_length = 255)
+    post_text: str = Field(min_length = 1)
 
 class CommentSchema(BaseModel):
     user_id: int
