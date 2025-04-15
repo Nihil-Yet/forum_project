@@ -28,3 +28,15 @@ class GroupMember(BaseModel):
 
 class JoinGroupMember(GroupMember):
     role_id: int = 3
+
+class PostSchema(BaseModel):
+    user_id: int
+    group_id: int
+    status_id: int
+    post_name: str
+    post_text: str
+
+class CommentSchema(BaseModel):
+    user_id: int
+    post_id: int
+    comment_text: str
