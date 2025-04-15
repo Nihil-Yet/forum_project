@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # routers
 from routers.users import routerUsers
 from routers.groups import routerGroups
+from routers.posts import routerPosts
 
 # Приложение
 app = FastAPI()
@@ -27,6 +28,7 @@ app.add_middleware(
 
 app.include_router(router=routerUsers, prefix="/api", tags=["Users"])
 app.include_router(router=routerGroups, prefix="/api", tags=["Groups"])
+app.include_router(router=routerPosts, prefix="/api", tags=["Posts"])
 
 if __name__ == "__main__":
     uvicorn.run("mainApp:app", reload = True)
