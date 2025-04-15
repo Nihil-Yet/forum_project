@@ -32,7 +32,7 @@ class JoinGroupMember(GroupMember):
 class PostSchema(BaseModel):
     user_id: int
     group_id: int
-    isUrgently: bool = 1
+    isUrgently: bool = 1 # Срочно/Не срочно
     post_name: str = Field(min_length = 1, max_length = 255)
     post_text: str = Field(min_length = 1)
 
