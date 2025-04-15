@@ -36,6 +36,24 @@ async def create_post(new_post: PostSchema):
     finally:
         if connection: connection.close()
 
+# изменение статуса срочности
+@routerPosts.post("/posts/create/")
+async def change_post_status(post_id: int, isUrgently: bool):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute(
+                """UPDATE `posts` SET `isUrgently` = %s WHERE `id` = %s""",
+                (isUrgently, post_id))
+            await connection.commit()
+            return {"message": "Post status change successfully"}
+    finally:
+        if connection: connection.close()
+
 # получение информации обовсех постах
 @routerPosts.get("/posts/")
 async def get_posts():
