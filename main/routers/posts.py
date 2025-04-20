@@ -64,7 +64,7 @@ async def get_posts():
             await cursor.execute("""SELECT * FROM `posts`;""")
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "posts not found")
+                raise HTTPException(status_code = 404, detail = "Posts not found")
             return query_result
     finally:
         if connection: connection.close()
@@ -79,7 +79,7 @@ async def get_group_posts(group_id: int):
             await cursor.execute("""SELECT * FROM `posts` WHERE `group_id` = %s;""", (group_id,))
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "posts not found or group not exist")
+                raise HTTPException(status_code = 404, detail = "Posts not found or group not exist")
             return query_result
     finally:
         if connection: connection.close()
@@ -94,7 +94,7 @@ async def get_user_posts(user_id: int):
             await cursor.execute("""SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "posts not found or user not exist")
+                raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
             return query_result
     finally:
         if connection: connection.close()
@@ -109,7 +109,7 @@ async def get_post(post_id: int):
             await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s;""", (post_id,))
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "post not found")
+                raise HTTPException(status_code = 404, detail = "Post not found")
             return query_result
     finally:
         if connection: connection.close()
