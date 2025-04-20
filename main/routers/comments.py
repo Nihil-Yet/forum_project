@@ -52,7 +52,24 @@ async def get_comment(comment_id: int) -> CommentSchema:
     finally:
         if connection: connection.close()
 
-# получения комментария по id
+# получения комментариев под постом
+@routerComments.post("/comments/{post_id}/")
+async def get_post_comments(post_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute("""SELECT * FROM `comments` WHERE `post_id` = %s""",
+                                 (post_id,))
+            post_comments = await cursor.fetchall()
+            return post_comments
+    finally:
+        if connection: connection.close()
+
+# получения комментариев пользователя
 @routerComments.post("/comments/{user_id}/")
 async def get_user_comments(user_id: int):
     connection = None
@@ -66,5 +83,21 @@ async def get_user_comments(user_id: int):
                                  (user_id,))
             user_comments = await cursor.fetchall()
             return user_comments
+    finally:
+        if connection: connection.close()
+
+# получения комментариев пользователя
+@routerComments.delete("/comments/{comment_id}/")
+async def delete_comment(comment_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `comments` WHERE `id` = %s""", (comment_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Comment not found")
+            await cursor.execute("""DELETE FROM `comments` WHERE `id` = %s""", (comment_id,))
+            await connection.commit()
+            return {"message": "comment delete successful"}
     finally:
         if connection: connection.close()
