@@ -75,25 +75,6 @@ async def auth_user(authorized_user: LoginUserSchema):
     finally:
         if connection: connection.close()
 
-# функция редактирования имени юзера
-@routerUsers.post("/users/{user_id}/changename")
-async def change_username(user_id: int, new_name: str):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_id,))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code=404, detail="User not found")
-            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
-                                 (new_name, user_id,))
-            await connection.commit()
-            return {
-                "message": "username change successful"
-            }
-    finally:
-        if connection: connection.close()
-
 # функция проверки аутентификации/авторизации юзера
 @routerUsers.get("/users/login_check/")
 async def check_auth_user(
@@ -160,6 +141,28 @@ async def get_user_groups(user_id: int):
     finally:
         if connection:
             connection.close()
+
+# функция редактирования имени юзера
+@routerUsers.post("/users/{user_id}/changename")
+async def change_username(
+    user_id: int, new_name: str, 
+    # auth = Depends(check_auth_user)
+    ):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail="User not found")
+            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
+                                 (new_name, user_id,))
+            await connection.commit()
+            return {
+                "message": "username change successful"
+            }
+    finally:
+        if connection: connection.close()
 
 # функция удаления пользователя по его id
 @routerUsers.delete("/users/{user_id}/")
