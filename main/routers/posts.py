@@ -37,7 +37,7 @@ async def create_post(new_post: PostSchema):
         if connection: connection.close()
 
 # изменение статуса срочности
-@routerPosts.post("/posts/create/")
+@routerPosts.post("/posts/status/")
 async def change_post_status(post_id: int, isUrgently: bool):
     connection = None
     try:
