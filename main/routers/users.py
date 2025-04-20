@@ -5,7 +5,6 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.config import appSettings
 from auth import auth_utils
 from settings.schemes import UserSchema, AddUserSchema, LoginUserSchema
 
@@ -22,13 +21,9 @@ async def add_user(new_user: AddUserSchema):
             login_exist = await cursor.fetchone()
             if login_exist:
                 raise HTTPException(status_code=409, detail="Login already exists")
-            # await cursor.execute("""SELECT `id` FROM `users` WHERE `email` = %s""", (new_user.email,))
-            # email_exist = await cursor.fetchone()
-            # if email_exist:
-            #     raise HTTPException(status_code=409, detail="Email already used")
             hash_pass = auth_utils.hash_password(new_user.password)
-            await cursor.execute("""INSERT INTO `users` (user_name, login, password, email) VALUES (%s, %s, %s, %s)""",
-                                  (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.email))
+            await cursor.execute("""INSERT INTO `users` (user_name, login, password, is_student) VALUES (%s, %s, %s, %s)""",
+                                  (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_studen))
             await connection.commit()
             new_user_id = cursor.lastrowid
             return {
@@ -71,6 +66,36 @@ async def auth_user(authorized_user: LoginUserSchema):
     finally:
         if connection: connection.close()
 
+# функция редактирования имени юзера
+@routerUsers.post("/users/login/")
+async def change_username(user_id: int, new_name: str):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `users` WHERE `login` = %s;""", (authorized_user.login,))
+            user = await cursor.fetchone()
+            if not user:
+                raise HTTPException(status_code=401, detail="Invalid login or password")
+            if not auth_utils.check_password(user['password'], authorized_user.password):
+                raise HTTPException(status_code=401, detail="Invalid login or password")
+            jwt_payload = {
+                "sub": "user",
+                "id": user["id"],
+                "login": authorized_user.login,
+                "username": user["user_name"],
+                "email": user["email"],
+                }
+            token = auth_utils.encode_JWT(jwt_payload)
+            return {
+                "message": "Login successful", 
+                "access_JWT": token,
+                "token_type": "Byarer",
+                }
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
+    finally:
+        if connection: connection.close()
 
 # функция проверки аутентификации/авторизации юзера
 @routerUsers.get("/users/login_check/")
