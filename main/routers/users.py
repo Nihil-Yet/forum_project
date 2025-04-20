@@ -26,9 +26,18 @@ async def add_user(new_user: AddUserSchema):
                                   (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_studen))
             await connection.commit()
             new_user_id = cursor.lastrowid
+            jwt_payload = {
+                "sub": "user",
+                "id": new_user_id,
+                "login": new_user.login,
+                "username": new_user.user_name.strip().title(),
+                "is_student": new_user.is_studen,
+                }
+            token = auth_utils.encode_JWT(jwt_payload)
             return {
                 "message": "User added successfully",
                 "user_id": new_user_id,
+                "access_JWT": token,
             }
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
@@ -53,7 +62,7 @@ async def auth_user(authorized_user: LoginUserSchema):
                 "id": user["id"],
                 "login": authorized_user.login,
                 "username": user["user_name"],
-                "email": user["email"],
+                "is_student": user["is_student"],
                 }
             token = auth_utils.encode_JWT(jwt_payload)
             return {
@@ -67,33 +76,21 @@ async def auth_user(authorized_user: LoginUserSchema):
         if connection: connection.close()
 
 # функция редактирования имени юзера
-@routerUsers.post("/users/login/")
+@routerUsers.post("/users/{user_id}/changename")
 async def change_username(user_id: int, new_name: str):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `login` = %s;""", (authorized_user.login,))
-            user = await cursor.fetchone()
-            if not user:
-                raise HTTPException(status_code=401, detail="Invalid login or password")
-            if not auth_utils.check_password(user['password'], authorized_user.password):
-                raise HTTPException(status_code=401, detail="Invalid login or password")
-            jwt_payload = {
-                "sub": "user",
-                "id": user["id"],
-                "login": authorized_user.login,
-                "username": user["user_name"],
-                "email": user["email"],
-                }
-            token = auth_utils.encode_JWT(jwt_payload)
+            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail="User not found")
+            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
+                                 (new_name, user_id,))
+            await connection.commit()
             return {
-                "message": "Login successful", 
-                "access_JWT": token,
-                "token_type": "Byarer",
-                }
-    except aiomysql.MySQLError as ex:
-        logging.error(f"{ex}")
+                "message": "username change successful"
+            }
     finally:
         if connection: connection.close()
 
@@ -107,7 +104,7 @@ async def check_auth_user(
         "id": user_token["id"],
         "login": user_token["login"],
         "username": user_token["username"],
-        "email": user_token["email"],
+        "is_student": user_token["is_student"],
     }
     
 
