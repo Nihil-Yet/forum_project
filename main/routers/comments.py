@@ -10,7 +10,7 @@ from settings.schemes import CommentSchema
 routerComments = APIRouter()
 
 # создание поста
-@routerComments.post("/posts/create/")
+@routerComments.post("/comments/create/")
 async def create_comment(new_comment: CommentSchema):
     connection = None
     try:
