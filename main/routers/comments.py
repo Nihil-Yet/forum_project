@@ -9,7 +9,7 @@ from settings.schemes import CommentSchema
 
 routerComments = APIRouter()
 
-# создание поста
+# создание комментария
 @routerComments.post("/comments/create/")
 async def create_comment(new_comment: CommentSchema):
     connection = None
@@ -30,7 +30,24 @@ async def create_comment(new_comment: CommentSchema):
             new_comment_id = cursor.lastrowid
             return {
                 "message": "Comment create successfully",
-                "post_id": new_comment_id,
+                "comment_id": new_comment_id,
+            }
+    finally:
+        if connection: connection.close()
+
+# получения комментария по id
+@routerComments.post("/comments/{comment_id}/")
+async def get_comment(comment_id: int) -> CommentSchema:
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `comments` WHERE `id` = %s""", (comment_id,))
+            comment_inf = await cursor.fetchone()
+            if not comment_inf:
+                raise HTTPException(status_code = 404, detail = "Comment not found")
+            return {
+                CommentSchema(**comment_inf)
             }
     finally:
         if connection: connection.close()
