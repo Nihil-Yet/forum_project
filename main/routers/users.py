@@ -143,7 +143,7 @@ async def get_user_groups(user_id: int):
             connection.close()
 
 # функция редактирования имени юзера
-@routerUsers.post("/users/{user_id}/changename")
+@routerUsers.post("/users/{user_id}/{new_name}/changename/")
 async def change_username(
     user_id: int, new_name: str, 
     # auth = Depends(check_auth_user)
