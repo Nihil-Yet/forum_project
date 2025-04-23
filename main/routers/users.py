@@ -80,13 +80,21 @@ async def auth_user(authorized_user: LoginUserSchema):
 async def check_auth_user(
     user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
 ):
-    return {
-        "sub": user_token["sub"],
-        "id": user_token["id"],
-        "login": user_token["login"],
-        "username": user_token["username"],
-        "is_student": user_token["is_student"],
-    }
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `user_name` FROM `users` WHERE `id` = %s;""", (user_token["id"],))
+            user_name = await cursor.fetchone()
+        return {
+            "sub": user_token["sub"],
+            "id": user_token["id"],
+            "login": user_token["login"],
+            "username": user_name["user_name"],
+            "is_student": user_token["is_student"],
+        }
+    finally:
+        if connection: connection.close()
     
 
 # функция получения информации о всех зарегестрированных пользователях
@@ -96,7 +104,7 @@ async def get_users():
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id`, `user_name`, `login`, `email` FROM `users`;""")
+            await cursor.execute("""SELECT * FROM `users`;""")
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "users are not found")
