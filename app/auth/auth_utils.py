@@ -1,7 +1,6 @@
 # установленные модули
 import bcrypt
 import jwt
-from jwt.exceptions import InvalidTokenError
 from datetime import timedelta, datetime
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -53,7 +52,7 @@ def decode_JWT(
     try:
         decoded = jwt.decode(token, public_key, algorithms=[alg])
         return decoded
-    except InvalidTokenError as ex:
+    except jwt.exceptions.DecodeError as ex:
         logging.error(f"{ex}")
         raise HTTPException(status_code=401, detail="Invalid token error")
 
