@@ -68,21 +68,6 @@ async def get_group(group_id: int) -> GroupSchema:
         if connection:
             connection.close()
 
-# получение информации обовсех постах в группе
-@routerGroups.get("/posts/{group_id}/")
-async def get_group_posts(group_id: int):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `group_id` = %s;""", (group_id,))
-            query_result = await cursor.fetchall()
-            if not query_result:
-                raise HTTPException(status_code = 404, detail = "Posts not found or group not exist")
-            return query_result
-    finally:
-        if connection: connection.close()
-
 # функция вступления в группу
 @routerGroups.post("/groups/members/join/")
 async def joining_member(new_member: JoinGroupMember):
@@ -151,6 +136,21 @@ async def get_group_members(group_id: int):
     finally:
         if connection:
             connection.close()
+
+# получение информации обовсех постах в группе
+@routerGroups.get("/posts/{group_id}/")
+async def get_group_posts(group_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `posts` WHERE `group_id` = %s;""", (group_id,))
+            query_result = await cursor.fetchall()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = "Posts not found or group not exist")
+            return query_result
+    finally:
+        if connection: connection.close()
 
 # функция удаления группы по id
 @routerGroups.delete("/groups/{group_id}/")
