@@ -259,7 +259,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (20,'Test','TestUser','$2b$12$juBfEwfJBaaadgQDy4j6/u773xsE9UxexSyQZJqOYD6GDCn/kLGI2',NULL),(21,'Testuser2','Test2','$2b$12$DscuN1oGSbzh380yGIuhguzXZXMKeqxi8q3JIzGV9DW1hMVW5AwKS',NULL),(22,'Testuser2','Test3','$2b$12$681ZVnRU8JO/g46CKLxW2uC2iVz415Iu6UkfgK/mflPEEu.6RYCe2',NULL),(25,'Вячеслав','Student123','$2b$12$Omk/3etGT6m2aF6fIpa1C.QZzurasBK8fwMp7qxyOwpi1GLB3VXzC',1);
+INSERT INTO `users` VALUES (1,'Test','TestUser','$2b$12$juBfEwfJBaaadgQDy4j6/u773xsE9UxexSyQZJqOYD6GDCn/kLGI2',0);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
