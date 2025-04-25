@@ -1,0 +1,29 @@
+
+services:
+  db-forum-server:
+    image: mysql:8.0
+    container_name: db-forum-server
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: myrootpass
+      MYSQL_DATABASE: db_forum
+      MYSQL_USER: data_admin
+      MYSQL_PASSWORD: data_admin
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app-forum-server:
+    build: .
+    container_name: app-forum-server
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db-forum-server
+    environment:
+      DB_HOST: db-forum-server
+      DB_PORT: 3307
+      DB_NAME: db_forum
+      DB_USER: data_admin
+      DB_PASSWORD: data_admin
