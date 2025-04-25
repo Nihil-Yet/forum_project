@@ -27,10 +27,6 @@ app.add_middleware(
     max_age=3600,  # Указывает, как долго браузер может кэшировать CORS-ответы
 )
 
-@routerGroups.get("/")
-def Hello():
-    return "Hello!\n"
-
 app.include_router(router=routerUsers, prefix="/api", tags=["Users"])
 app.include_router(router=routerGroups, prefix="/api", tags=["Groups"])
 app.include_router(router=routerPosts, prefix="/api", tags=["Posts"])
