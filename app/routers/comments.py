@@ -46,9 +46,7 @@ async def get_comment(comment_id: int) -> CommentSchema:
             comment_inf = await cursor.fetchone()
             if not comment_inf:
                 raise HTTPException(status_code = 404, detail = "Comment not found")
-            return {
-                CommentSchema(**comment_inf)
-            }
+            return CommentSchema(**comment_inf)
     finally:
         if connection: connection.close()
 
