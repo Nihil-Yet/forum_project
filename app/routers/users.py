@@ -150,6 +150,21 @@ async def get_user_groups(user_id: int):
         if connection:
             connection.close()
 
+# получение информации обовсех постах пользователя
+@routerUsers.get("/{user_id}/posts/")
+async def get_user_posts(user_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
+            query_result = await cursor.fetchall()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
+            return query_result
+    finally:
+        if connection: connection.close()
+
 # функция редактирования имени юзера
 @routerUsers.post("/users/{user_id}/{new_name}/changename/")
 async def change_username(

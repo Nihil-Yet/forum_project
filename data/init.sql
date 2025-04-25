@@ -93,7 +93,7 @@ CREATE TABLE `groups` (
 
 LOCK TABLES `groups` WRITE;
 /*!40000 ALTER TABLE `groups` DISABLE KEYS */;
-INSERT INTO `groups` VALUES (1,'TestGroup','Group for test my API',NULL),(4,'TestGroup2','Testing new connection',NULL);
+INSERT INTO `groups` VALUES (1,'TestGroup','Group for test API',NULL);
 /*!40000 ALTER TABLE `groups` ENABLE KEYS */;
 UNLOCK TABLES;
 

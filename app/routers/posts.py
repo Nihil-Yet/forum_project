@@ -69,36 +69,6 @@ async def get_posts():
     finally:
         if connection: connection.close()
 
-# получение информации обовсех постах в группе
-@routerPosts.get("/posts/{group_id}/")
-async def get_group_posts(group_id: int):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `group_id` = %s;""", (group_id,))
-            query_result = await cursor.fetchall()
-            if not query_result:
-                raise HTTPException(status_code = 404, detail = "Posts not found or group not exist")
-            return query_result
-    finally:
-        if connection: connection.close()
-
-# получение информации обовсех постах пользователя
-@routerPosts.get("/posts/{user_id}/")
-async def get_user_posts(user_id: int):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
-            query_result = await cursor.fetchall()
-            if not query_result:
-                raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
-            return query_result
-    finally:
-        if connection: connection.close()
-
 # информация о посте
 @routerPosts.get("/posts/{post_id}/")
 async def get_post(post_id: int):
