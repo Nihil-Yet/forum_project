@@ -15,7 +15,8 @@ async def database_connect():
             user=appSettings.dbSettings.user,
             password=appSettings.dbSettings.password,
             db=appSettings.dbSettings.name,
-            cursorclass=aiomysql.cursors.DictCursor
+            cursorclass=aiomysql.cursors.DictCursor,
+            charset="utf8mb4",
         )
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
