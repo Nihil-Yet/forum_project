@@ -32,8 +32,7 @@ async def add_group(new_group: GroupSchema):
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
     finally:
-        if connection:
-            await connection.close()
+        if connection: connection.close()
 
 # функция получения информации о всех существующих группах
 @routerGroups.get("/groups/")
