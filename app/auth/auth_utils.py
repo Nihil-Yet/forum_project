@@ -53,7 +53,7 @@ def decode_JWT(
         decoded = jwt.decode(token, public_key, algorithms=[alg])
         return decoded
     except jwt.exceptions.DecodeError as ex:
-        logging.error(f"{ex}")
+        # logging.error(f"{ex}")
         raise HTTPException(status_code=401, detail="Invalid token error")
 
 http_bearer = HTTPBearer()
