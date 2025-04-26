@@ -5,13 +5,17 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import GroupSchema, GroupMember, JoinGroupMember
+from settings.schemes import GroupSchema, GroupMember, JoinGroupMember, UserSchema
+from auth import auth_utils
 
 routerGroups = APIRouter()
 
 # функция добавления группы
 @routerGroups.post("/groups/create/")
-async def add_group(new_group: GroupSchema):
+async def add_group(
+    new_group: GroupSchema,
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
@@ -25,6 +29,8 @@ async def add_group(new_group: GroupSchema):
                                  (new_group.group_name, new_group.description))
             await connection.commit()
             new_group_id = cursor.lastrowid
+            await cursor.execute("""INSERT INTO `user_group` (user_id, group_id, role_id) VALUES (%s, %s, %s);""",
+                                 (user_token["id"], new_group_id, 1,))
             return {
                 "message": "Group added succesfully",
                 "group_id": new_group_id,
