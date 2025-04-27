@@ -30,13 +30,11 @@ class JoinGroupMember(GroupMember):
     role_id: int = 3
 
 class PostSchema(BaseModel):
-    user_id: int
     group_id: int
     isUrgently: bool = 1 # Срочно/Не срочно
     post_name: str = Field(min_length = 1, max_length = 255)
     post_text: str = Field(min_length = 1)
 
 class CommentSchema(BaseModel):
-    user_id: int
     post_id: int
     comment_text: str
