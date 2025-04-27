@@ -169,6 +169,7 @@ async def delete_group(
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = f"group with id = {group_id} not found")
             await cursor.execute(
@@ -179,7 +180,6 @@ async def delete_group(
                 raise HTTPException(status_code = 404, detail = f"user {user_token["id"]} not in group {group_id}")
             if user["role_id"] != 1:
                 raise HTTPException(status_code = 403, detail = f"user {user_token["id"]} not have enough rights")
-            await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
             await cursor.execute("""DELETE FROM `groups` WHERE `id` = %s;""", (group_id,))
             await connection.commit()
             return {"message": "Group delete succesfully"}
