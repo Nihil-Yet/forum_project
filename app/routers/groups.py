@@ -31,6 +31,7 @@ async def add_group(
             new_group_id = cursor.lastrowid
             await cursor.execute("""INSERT INTO `user_group` (user_id, group_id, role_id) VALUES (%s, %s, %s);""",
                                  (user_token["id"], new_group_id, 1,))
+            await connection.commit()
             return {
                 "message": "Group added succesfully",
                 "group_id": new_group_id,
