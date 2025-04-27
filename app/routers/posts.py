@@ -5,7 +5,8 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import PostSchema
+from settings.schemes import PostSchema, UserSchema
+from auth import auth_utils
 
 routerPosts = APIRouter()
 
@@ -13,21 +14,34 @@ routerPosts = APIRouter()
 @routerPosts.post("/posts/create/")
 async def create_post(
     new_post: PostSchema,
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
     ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s""", (new_post.user_id,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s""",
+                (user_token["id"],))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
-            await cursor.execute("""SELECT * FROM `groups` WHERE `id` = %s""", (new_post.group_id,))
+            await cursor.execute(
+                """SELECT * FROM `groups` WHERE `id` = %s""",
+                (new_post.group_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "Group not found")
             await cursor.execute(
+                """SELECT * FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s""",
+                (user_token["id"], new_post.group_id))
+            if not await cursor.fetchone():
+                raise HTTPException(
+                    status_code = 404,
+                    detail = f"User {user_token["id"]} not in group {new_post.group_id}")
+
+            await cursor.execute(
                 """INSERT INTO `posts` (user_id, group_id, isUrgently, post_name, post_text) 
                 VALUES (%s, %s, %s, %s, %s)""",
-                (new_post.user_id, new_post.group_id, new_post.isUrgently,
+                (user_token["id"], new_post.group_id, new_post.isUrgently,
                  new_post.post_name, new_post.post_text,))
             await connection.commit()
             new_post_id = cursor.lastrowid
@@ -39,15 +53,32 @@ async def create_post(
         if connection: connection.close()
 
 # изменение статуса срочности
-@routerPosts.post("/posts/status/")
-async def change_post_status(post_id: int, isUrgently: bool):
+@routerPosts.post("/posts/{post_id}/{isUrgently}/status/")
+async def change_post_status(
+    post_id: int, isUrgently: bool,
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
-            if not await cursor.fetchone():
+            await cursor.execute(
+                """SELECT * FROM `posts` WHERE `id` = %s""",
+                (post_id,))
+            post_inf = await cursor.fetchone()
+            if not post_inf:
                 raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute(
+                """SELECT `role_id` 
+                FROM `user_group` WHERE `group_id` = %s AND `user_id` = %s""",
+                (post_inf["group_id"], user_token["id"],))
+            user_role = await cursor.fetchone()
+            if not user_role:
+                raise HTTPException(status_code=403, detail="User not in the group")
+            if not (post_inf["user_id"] == user_token["id"] or user_role["role_id"] in (1, 2)):
+                raise HTTPException(
+                    status_code = 403,
+                    detail = f"User {user_token["id"]} not have enough rights")
             await cursor.execute(
                 """UPDATE `posts` SET `isUrgently` = %s WHERE `id` = %s""",
                 (isUrgently, post_id))
@@ -105,15 +136,30 @@ async def get_post_comments(post_id: int):
 
 # удаление поста
 @routerPosts.delete("/posts/{post_id}/")
-async def delete_post(post_id: int):
+async def delete_post(
+    post_id: int,
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
                 """SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
-            if not await cursor.fetchone():
+            post_inf = await cursor.fetchone()
+            if not post_inf:
                 raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute(
+                """SELECT `role_id` 
+                FROM `user_group` WHERE `group_id` = %s AND `user_id` = %s""",
+                (post_inf["group_id"], user_token["id"],))
+            user_role = await cursor.fetchone()
+            if not user_role:
+                raise HTTPException(status_code=403, detail="User not in the group")
+            if not (post_inf["user_id"] == user_token["id"] or user_role["role_id"] in (1, 2)):
+                raise HTTPException(
+                    status_code = 403,
+                    detail = f"User {user_token["id"]} not have enough rights")
             await cursor.execute("""DELETE FROM `posts` WHERE `id` = %s""", (post_id,))
             await connection.commit()
             return {"message": "post delete successful"}
