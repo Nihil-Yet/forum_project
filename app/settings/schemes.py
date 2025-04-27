@@ -23,7 +23,6 @@ class GroupSchema(BaseModel):
 
 # схема пользователя в группе
 class GroupMember(BaseModel):
-    user_id: int
     group_id: int
 
 class JoinGroupMember(GroupMember):
