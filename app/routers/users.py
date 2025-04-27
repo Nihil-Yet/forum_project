@@ -154,7 +154,7 @@ async def get_user_groups(user_id: int):
 @routerUsers.post("/users/{user_id}/{new_name}/changename/")
 async def change_username(
     user_id: int, new_name: str, 
-    # auth = Depends(check_auth_user)
+    user_token = Depends(auth_utils.get_jwt_payload)
     ):
     connection = None
     try:
