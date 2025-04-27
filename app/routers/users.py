@@ -171,7 +171,7 @@ async def get_user_groups(user_id: int):
                 """, (user_id,))
             user_groups = await cursor.fetchall()
             if not user_groups:
-                raise HTTPException(status_code = 404, detail = f"Usegir with id = {user_id} not in any group")
+                raise HTTPException(status_code = 404, detail = f"User with id = {user_id} not in any group")
             return user_groups
     finally:
         if connection:
@@ -184,8 +184,9 @@ async def get_user_posts(user_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""
-            SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
+            await cursor.execute(
+                """SELECT * FROM `posts` WHERE `user_id` = %s;""", 
+                (user_id,))
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
