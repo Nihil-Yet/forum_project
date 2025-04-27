@@ -161,11 +161,22 @@ async def get_group_posts(group_id: int):
 
 # функция удаления группы по id
 @routerGroups.delete("/groups/{group_id}/")
-async def delete_group(group_id: int):
+async def delete_group(
+    group_id: int,
+    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
+            await cursor.execute(
+                """SELECT * FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s;""",
+                (user_token["id"], group_id,))
+            user = await cursor.fetchone()
+            if not user:
+                raise HTTPException(status_code = 404, detail = f"user {user_token["id"]} not in group {group_id}")
+            if user["role"] != 1:
+                raise HTTPException(status_code = 403, detail = f"user {user_token["id"]} not have access")
             await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
             query_result = await cursor.fetchone()
             if not query_result:
