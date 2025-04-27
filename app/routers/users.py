@@ -141,16 +141,12 @@ async def get_user_groups(user_id: int):
             await cursor.execute("""SELECT `id` FROM `users` WHERE `id` = %s""", (user_id))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
-            await cursor.execute
-            (
-                """
+            await cursor.execute("""
                 SELECT ug.id, ug.group_id, ug.role_id, g.group_name
                 FROM user_group ug
-                JOIN groups g ON ug.group_id = g.id
+                JOIN `groups` g ON ug.group_id = g.id
                 WHERE ug.user_id = %s
-                """, 
-                (user_id,)
-            )
+                """, (user_id,))
             user_groups = await cursor.fetchall()
             if not user_groups:
                 raise HTTPException(status_code = 404, detail = f"User with id = {user_id} not in any group")
