@@ -175,8 +175,8 @@ async def delete_group(
             user = await cursor.fetchone()
             if not user:
                 raise HTTPException(status_code = 404, detail = f"user {user_token["id"]} not in group {group_id}")
-            if user["role"] != 1:
-                raise HTTPException(status_code = 403, detail = f"user {user_token["id"]} not have access")
+            if user["role_id"] != 1:
+                raise HTTPException(status_code = 403, detail = f"user {user_token["id"]} not have enough rights")
             await cursor.execute("""SELECT * FROM `groups` WHERE id = %s;""", (group_id,))
             query_result = await cursor.fetchone()
             if not query_result:
