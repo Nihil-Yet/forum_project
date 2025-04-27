@@ -50,24 +50,7 @@ async def get_comment(comment_id: int) -> CommentSchema:
     finally:
         if connection: connection.close()
 
-# получения комментариев под постом
-@routerComments.post("/comments/{post_id}/")
-async def get_post_comments(post_id: int):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code = 404, detail = "Post not found")
-            await cursor.execute("""SELECT * FROM `comments` WHERE `post_id` = %s""",
-                                 (post_id,))
-            post_comments = await cursor.fetchall()
-            return post_comments
-    finally:
-        if connection: connection.close()
-
-# получения комментариев пользователя
+# удаление комментария
 @routerComments.delete("/comments/{comment_id}/")
 async def delete_comment(comment_id: int):
     connection = None

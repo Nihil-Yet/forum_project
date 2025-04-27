@@ -11,7 +11,9 @@ routerPosts = APIRouter()
 
 # создание поста
 @routerPosts.post("/posts/create/")
-async def create_post(new_post: PostSchema):
+async def create_post(
+    new_post: PostSchema,
+    ):
     connection = None
     try:
         connection = await database_connect()
@@ -81,5 +83,39 @@ async def get_post(post_id: int):
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Post not found")
             return query_result
+    finally:
+        if connection: connection.close()
+
+# получения комментариев под постом
+@routerPosts.post("/posts/{post_id}/comments")
+async def get_post_comments(post_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute("""SELECT * FROM `comments` WHERE `post_id` = %s""",
+                                 (post_id,))
+            post_comments = await cursor.fetchall()
+            return post_comments
+    finally:
+        if connection: connection.close()
+
+# удаление поста
+@routerPosts.delete("/posts/{post_id}/")
+async def delete_post(post_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute(
+                """SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code = 404, detail = "Post not found")
+            await cursor.execute("""DELETE FROM `posts` WHERE `id` = %s""", (post_id,))
+            await connection.commit()
+            return {"message": "post delete successful"}
     finally:
         if connection: connection.close()
