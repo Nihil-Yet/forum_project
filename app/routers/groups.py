@@ -145,7 +145,7 @@ async def get_group_members(group_id: int):
             connection.close()
 
 # получение информации обовсех постах в группе
-@routerGroups.get("/posts/{group_id}/")
+@routerGroups.get("/groups/{group_id}/posts")
 async def get_group_posts(group_id: int):
     connection = None
     try:

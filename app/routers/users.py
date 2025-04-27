@@ -178,7 +178,7 @@ async def get_user_groups(user_id: int):
             connection.close()
 
 # получение информации обовсех постах пользователя
-@routerUsers.get("/{user_id}/posts/")
+@routerUsers.get("/users/{user_id}/posts/")
 async def get_user_posts(user_id: int):
     connection = None
     try:
@@ -195,7 +195,7 @@ async def get_user_posts(user_id: int):
         if connection: connection.close()
 
 # получения комментариев пользователя
-@routerUsers.post("/{user_id}/comments/")
+@routerUsers.post("/users/{user_id}/comments/")
 async def get_user_comments(user_id: int):
     connection = None
     try:
