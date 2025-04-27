@@ -44,7 +44,7 @@ async def create_comment(
 
 # получения комментария по id
 @routerComments.post("/comments/{comment_id}/")
-async def get_comment(comment_id: int) -> CommentSchema:
+async def get_comment(comment_id: int):
     connection = None
     try:
         connection = await database_connect()
@@ -53,7 +53,7 @@ async def get_comment(comment_id: int) -> CommentSchema:
             comment_inf = await cursor.fetchone()
             if not comment_inf:
                 raise HTTPException(status_code = 404, detail = "Comment not found")
-            return CommentSchema(**comment_inf)
+            return comment_inf
     finally:
         if connection: connection.close()
 
