@@ -131,6 +131,28 @@ async def get_user(user_id: int) -> UserSchema:
     finally:
         if connection: connection.close()
 
+# функция редактирования имени юзера
+@routerUsers.post("/users/{new_name}/changename/")
+async def change_username(
+    new_name: str, 
+    user_token = Depends(auth_utils.get_jwt_payload)
+    ):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_token["id"],))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail="User not found")
+            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
+                                 (new_name, user_token["id"],))
+            await connection.commit()
+            return {
+                "message": "username change successful"
+            }
+    finally:
+        if connection: connection.close()
+
 # функция получения информации о всех группах, в которых состоит пользователль
 @routerUsers.get("/users/{user_id}/groups/")
 async def get_user_groups(user_id: int):
@@ -154,28 +176,6 @@ async def get_user_groups(user_id: int):
     finally:
         if connection:
             connection.close()
-
-# функция редактирования имени юзера
-@routerUsers.post("/users/{user_id}/{new_name}/changename/")
-async def change_username(
-    user_id: int, new_name: str, 
-    user_token = Depends(auth_utils.get_jwt_payload)
-    ):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_id,))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code=404, detail="User not found")
-            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
-                                 (new_name, user_id,))
-            await connection.commit()
-            return {
-                "message": "username change successful"
-            }
-    finally:
-        if connection: connection.close()
 
 # получение информации обовсех постах пользователя
 @routerUsers.get("/{user_id}/posts/")
