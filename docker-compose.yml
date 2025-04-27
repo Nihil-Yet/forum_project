@@ -18,7 +18,7 @@ services:
     build: .
     container_name: app-forum-server
     ports:
-      - "8000:8000"
+      - "8080:8000"
     depends_on:
       - db-forum-server
     environment:
