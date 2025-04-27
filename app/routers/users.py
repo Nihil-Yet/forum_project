@@ -132,7 +132,7 @@ async def get_user(user_id: int) -> UserSchema:
         if connection: connection.close()
 
 # функция редактирования имени юзера
-@routerUsers.post("/users/{new_name}/changename/")
+@routerUsers.post("/users/changename/{new_name}/")
 async def change_username(
     new_name: str, 
     user_token = Depends(auth_utils.get_jwt_payload)
@@ -184,7 +184,8 @@ async def get_user_posts(user_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
+            await cursor.execute("""
+            SELECT * FROM `posts` WHERE `user_id` = %s;""", (user_id,))
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
