@@ -22,17 +22,22 @@ class GroupSchema(BaseModel):
     description: str = Field(max_length=1024)
 
 # схема пользователя в группе
-class GroupMember(BaseModel):
+class JoinGroupMember(BaseModel):
     group_id: int
-
-class JoinGroupMember(GroupMember):
     role_id: int = 3
 
-class PostSchema(BaseModel):
+class LeftGroupMember(BaseModel):
+    user_id: int
+    group_id: int
+
+class AddPostSchema(BaseModel):
     group_id: int
     isUrgently: bool = 1 # Срочно/Не срочно
     post_name: str = Field(min_length = 1, max_length = 255)
     post_text: str = Field(min_length = 1)
+
+class PostSchema(AddPostSchema):
+    user_id: int
 
 class CommentSchema(BaseModel):
     post_id: int

@@ -5,7 +5,7 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import PostSchema, UserSchema
+from settings.schemes import PostSchema, AddPostSchema, UserSchema
 from auth import auth_utils
 
 routerPosts = APIRouter()
@@ -13,7 +13,7 @@ routerPosts = APIRouter()
 # создание поста
 @routerPosts.post("/posts/create/")
 async def create_post(
-    new_post: PostSchema,
+    new_post: AddPostSchema,
     user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
     ):
     connection = None
@@ -104,7 +104,7 @@ async def get_posts():
 
 # информация о посте
 @routerPosts.get("/posts/{post_id}/")
-async def get_post(post_id: int):
+async def get_post(post_id: int) -> PostSchema:
     connection = None
     try:
         connection = await database_connect()

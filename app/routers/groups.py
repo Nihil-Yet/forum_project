@@ -5,7 +5,8 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import GroupSchema, GroupMember, JoinGroupMember, UserSchema
+from settings.schemes import GroupSchema, \
+    LeftGroupMember, JoinGroupMember, UserSchema
 from auth.auth_utils import get_jwt_payload
 
 routerGroups = APIRouter()
@@ -117,7 +118,7 @@ async def joining_member(
 
 # функция выхода из группы
 @routerGroups.post("/groups/members/left/")
-async def left_member(left_member: GroupMember):
+async def left_member(left_member: LeftGroupMember):
     connection = None
     try:
         connection = await database_connect()
