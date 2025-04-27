@@ -6,7 +6,7 @@ import logging
 # собственные модули
 from settings.database import database_connect
 from settings.schemes import GroupSchema, GroupMember, JoinGroupMember, UserSchema
-from auth import auth_utils
+from auth.auth_utils import get_jwt_payload
 
 routerGroups = APIRouter()
 
@@ -14,7 +14,7 @@ routerGroups = APIRouter()
 @routerGroups.post("/groups/create/")
 async def add_group(
     new_group: GroupSchema,
-    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(get_jwt_payload)
     ):
     connection = None
     try:
@@ -163,7 +163,7 @@ async def get_group_posts(group_id: int):
 @routerGroups.delete("/groups/{group_id}/")
 async def delete_group(
     group_id: int,
-    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(get_jwt_payload)
     ):
     connection = None
     try:
