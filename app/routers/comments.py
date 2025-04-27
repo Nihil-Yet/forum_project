@@ -5,27 +5,34 @@ import logging
 
 # собственные модули
 from settings.database import database_connect
-from settings.schemes import CommentSchema
+from settings.schemes import CommentSchema, UserSchema
+from auth.auth_utils import get_jwt_payload
 
 routerComments = APIRouter()
 
 # создание комментария
 @routerComments.post("/comments/create/")
-async def create_comment(new_comment: CommentSchema):
+async def create_comment(
+    new_comment: CommentSchema,
+    user_token: UserSchema = Depends(get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s""", (new_comment.user_id,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s""",
+                (user_token["id"],))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
-            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (new_comment.post_id,))
+            await cursor.execute(
+                """SELECT * FROM `posts` WHERE `id` = %s""", (new_comment.post_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "Post not found")
             await cursor.execute(
                 """INSERT INTO `comments` (user_id, post_id, comment_text) 
                 VALUES (%s, %s, %s);""",
-                (new_comment.user_id, new_comment.post_id, new_comment.comment_text,))
+                (user_token["id"], new_comment.post_id, new_comment.comment_text,))
             await connection.commit()
             new_comment_id = cursor.lastrowid
             return {
