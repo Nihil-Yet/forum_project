@@ -17,13 +17,16 @@ async def add_user(new_user: AddUserSchema):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id` FROM `users` WHERE `login` = %s""", (new_user.login,))
+            await cursor.execute(
+                """SELECT `id` FROM `users` WHERE `login` = %s""",
+                (new_user.login,))
             login_exist = await cursor.fetchone()
             if login_exist:
                 raise HTTPException(status_code=409, detail="Login already exists")
             hash_pass = auth_utils.hash_password(new_user.password)
-            await cursor.execute("""INSERT INTO `users` (user_name, login, password, is_student) VALUES (%s, %s, %s, %s)""",
-                                  (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_studen))
+            await cursor.execute(
+                """INSERT INTO `users` (user_name, login, password, is_student) VALUES (%s, %s, %s, %s)""",
+                (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_studen))
             await connection.commit()
             new_user_id = cursor.lastrowid
             jwt_payload = {
@@ -51,7 +54,9 @@ async def auth_user(authorized_user: LoginUserSchema):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `login` = %s;""", (authorized_user.login,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `login` = %s;""",
+                (authorized_user.login,))
             user = await cursor.fetchone()
             if not user:
                 raise HTTPException(status_code=401, detail="Invalid login or password")
@@ -84,7 +89,9 @@ async def check_auth_user(
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `user_name` FROM `users` WHERE `id` = %s;""", (user_token["id"],))
+            await cursor.execute(
+                """SELECT `user_name` FROM `users` WHERE `id` = %s;""",
+                (user_token["id"],))
             user_name = await cursor.fetchone()
         return {
             "sub": user_token["sub"],
@@ -121,10 +128,14 @@ async def get_user(user_id: int) -> UserSchema:
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE id = %s;""", (user_id,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE id = %s;""",
+                (user_id,))
             query_result = await cursor.fetchone()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = f"user with id = {user_id} not found")
+                raise HTTPException(
+                    status_code = 404, 
+                    detail = f"user with id = {user_id} not found")
             return UserSchema(**query_result)
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
@@ -141,11 +152,14 @@ async def change_username(
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_token["id"],))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s;""",
+                (user_token["id"],))
             if not await cursor.fetchone():
                 raise HTTPException(status_code=404, detail="User not found")
-            await cursor.execute("""UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""", 
-                                 (new_name, user_token["id"],))
+            await cursor.execute(
+                """UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""",
+                (new_name, user_token["id"],))
             await connection.commit()
             return {
                 "message": "username change successful"
@@ -160,7 +174,9 @@ async def get_user_groups(user_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT `id` FROM `users` WHERE `id` = %s""", (user_id))
+            await cursor.execute(
+                """SELECT `id` FROM `users` WHERE `id` = %s""",
+                (user_id))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
             await cursor.execute("""
@@ -171,7 +187,9 @@ async def get_user_groups(user_id: int):
                 """, (user_id,))
             user_groups = await cursor.fetchall()
             if not user_groups:
-                raise HTTPException(status_code = 404, detail = f"User with id = {user_id} not in any group")
+                raise HTTPException(
+                    status_code = 404,
+                    detail = f"User with id = {user_id} not in any group")
             return user_groups
     finally:
         if connection:
@@ -189,7 +207,9 @@ async def get_user_posts(user_id: int):
                 (user_id,))
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "Posts not found or user not exist")
+                raise HTTPException(
+                    status_code = 404,
+                    detail = "Posts not found or user not exist")
             return query_result
     finally:
         if connection: connection.close()
@@ -201,7 +221,9 @@ async def get_user_comments(user_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s""", (user_id,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s""",
+                (user_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
             await cursor.execute(
@@ -219,12 +241,15 @@ async def delete_user(user_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `users` WHERE `id` = %s;""", (user_id,))
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s;""",
+                (user_id,))
             user = await cursor.fetchone()
             if not user:
                 raise HTTPException(status_code = 404, detail = f"user with id = {user_id} not found")
-            await cursor.execute("""DELETE FROM `user_group` WHERE `user_id` = %s""", (user_id,))
-            await cursor.execute("""DELETE FROM `users` WHERE `id` = %s;""", (user_id,))
+            await cursor.execute(
+                """DELETE FROM `users` WHERE `id` = %s;""",
+                (user_id,))
             await connection.commit()
             return {"message": "User delete succesfully"}
     except aiomysql.MySQLError as ex:
