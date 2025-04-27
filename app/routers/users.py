@@ -171,7 +171,7 @@ async def get_user_groups(user_id: int):
                 """, (user_id,))
             user_groups = await cursor.fetchall()
             if not user_groups:
-                raise HTTPException(status_code = 404, detail = f"User with id = {user_id} not in any group")
+                raise HTTPException(status_code = 404, detail = f"Usegir with id = {user_id} not in any group")
             return user_groups
     finally:
         if connection:
