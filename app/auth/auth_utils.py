@@ -1,7 +1,6 @@
 # установленные модули
 import bcrypt
 import jwt
-from jwt import encode
 from datetime import timedelta, datetime
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -41,7 +40,7 @@ def encode_JWT(
         iat = now,
         exp = expire,
         )
-    encoded = encode(to_encode, private_key, algorithm=alg,)
+    encoded = jwt.encode(to_encode, private_key, algorithm=alg,)
     return encoded
 
 # декодирование токена
