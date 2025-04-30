@@ -80,6 +80,31 @@ async def auth_user(authorized_user: LoginUserSchema):
     finally:
         if connection: connection.close()
 
+# функция редактирования имени юзера
+@routerUsers.post("/users/changename/{new_name}/")
+async def change_username(
+    new_name: str, 
+    user_token = Depends(auth_utils.get_jwt_payload)
+    ):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute(
+                """SELECT * FROM `users` WHERE `id` = %s;""",
+                (user_token["id"],))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=404, detail="User not found")
+            await cursor.execute(
+                """UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""",
+                (new_name, user_token["id"],))
+            await connection.commit()
+            return {
+                "message": "username change successful"
+            }
+    finally:
+        if connection: connection.close()
+
 # функция проверки аутентификации/авторизации юзера
 @routerUsers.get("/users/login_check/")
 async def check_auth_user(
@@ -139,31 +164,6 @@ async def get_user(user_id: int) -> UserSchema:
             return UserSchema(**query_result)
     except aiomysql.MySQLError as ex:
         logging.error(f"{ex}")
-    finally:
-        if connection: connection.close()
-
-# функция редактирования имени юзера
-@routerUsers.post("/users/changename/{new_name}/")
-async def change_username(
-    new_name: str, 
-    user_token = Depends(auth_utils.get_jwt_payload)
-    ):
-    connection = None
-    try:
-        connection = await database_connect()
-        async with connection.cursor() as cursor:
-            await cursor.execute(
-                """SELECT * FROM `users` WHERE `id` = %s;""",
-                (user_token["id"],))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code=404, detail="User not found")
-            await cursor.execute(
-                """UPDATE `users` SET `user_name` = %s WHERE `id` = %s;""",
-                (new_name, user_token["id"],))
-            await connection.commit()
-            return {
-                "message": "username change successful"
-            }
     finally:
         if connection: connection.close()
 
