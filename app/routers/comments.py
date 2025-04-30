@@ -34,6 +34,10 @@ async def create_comment(
                 (user_token["id"], new_comment.post_id, new_comment.comment_text,))
             await connection.commit()
             new_comment_id = cursor.lastrowid
+            await cursor.execute(
+                """UPDATE `posts` SET `comments_num` += 1 WHERE `id`=%s""",
+                (new_comment.post_id,)
+            )
             return {
                 "message": "Comment create successfully",
                 "comment_id": new_comment_id,
