@@ -6,7 +6,7 @@ import logging
 # собственные модули
 from settings.database import database_connect
 from settings.schemes import CommentSchema, UserSchema
-from auth.auth_utils import get_jwt_payload
+from auth import get_jwt_payload
 
 routerComments = APIRouter()
 

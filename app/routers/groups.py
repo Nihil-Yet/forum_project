@@ -7,7 +7,7 @@ import logging
 from settings.database import database_connect
 from settings.schemes import GroupSchema, \
     LeftGroupMember, JoinGroupMember, UserSchema
-from auth.auth_utils import get_jwt_payload
+from auth import get_jwt_payload
 
 routerGroups = APIRouter()
 

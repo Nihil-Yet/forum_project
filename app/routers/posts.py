@@ -6,7 +6,7 @@ import logging
 # собственные модули
 from settings.database import database_connect
 from settings.schemes import PostSchema, AddPostSchema, UserSchema
-from auth import auth_utils
+from auth import get_jwt_payload
 
 routerPosts = APIRouter()
 
@@ -14,7 +14,7 @@ routerPosts = APIRouter()
 @routerPosts.post("/posts/create/")
 async def create_post(
     new_post: AddPostSchema,
-    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(get_jwt_payload)
     ):
     connection = None
     try:
@@ -56,7 +56,7 @@ async def create_post(
 @routerPosts.post("/posts/{post_id}/{isUrgently}/status/")
 async def change_post_status(
     post_id: int, isUrgently: bool,
-    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(get_jwt_payload)
     ):
     connection = None
     try:
@@ -138,7 +138,7 @@ async def get_post_comments(post_id: int):
 @routerPosts.delete("/posts/{post_id}/")
 async def delete_post(
     post_id: int,
-    user_token: UserSchema = Depends(auth_utils.get_jwt_payload)
+    user_token: UserSchema = Depends(get_jwt_payload)
     ):
     connection = None
     try:
