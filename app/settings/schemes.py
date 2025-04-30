@@ -38,6 +38,7 @@ class AddPostSchema(BaseModel):
 
 class PostSchema(AddPostSchema):
     user_id: int
+    comments_num: int
 
 class CommentSchema(BaseModel):
     post_id: int
