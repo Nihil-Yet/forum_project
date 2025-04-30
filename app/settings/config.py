@@ -15,7 +15,7 @@ def is_host_reachable(host):
 
 # настройки для создания БД
 class DBSettings(BaseModel):
-    host: str = "db-forum-server" if is_host_reachable("db-forum-server") else "localhost"
+    host: str = "db-forum" if is_host_reachable("db-forum") else "localhost"
     port: int = 3306
     user: str = "data_admin"
     password: str = "data_admin"

@@ -1,8 +1,8 @@
 
 services:
-  db-forum-server:
+  db-forum:
     image: mysql:8.0
-    container_name: db-forum-server
+    container_name: db-forum
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: myrootpass
@@ -16,13 +16,13 @@ services:
 
   app:
     build: .
-    container_name: app-forum-server
+    container_name: api-forum
     ports:
       - "8080:8000"
     depends_on:
-      - db-forum-server
+      - db-forum
     environment:
-      DB_HOST: db-forum-server
+      DB_HOST: db-forum
       DB_PORT: 3307
       DB_NAME: db_forum
       DB_USER: data_admin
