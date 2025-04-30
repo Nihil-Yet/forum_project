@@ -107,7 +107,7 @@ async def joining_member(
                     detail="This user is already a member of this group")
             await cursor.execute(
                 """INSERT INTO `user_group` (user_id, group_id, role_id) VALUES (%s, %s, %s);""",
-                (new_member.user_id, new_member.group_id, new_member.role_id,))
+                (user_token["id"], new_member.group_id, new_member.role_id,))
             await connection.commit()
             return {"message": "User has successfully joined the group"}
     except aiomysql.MySQLError as ex:
