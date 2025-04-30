@@ -100,7 +100,6 @@ async def delete_comment(
                 (comment_inf["post_id"],)
             )
             await connection.commit()
-            await connection.commit()
             return {"message": "comment delete successful"}
     finally:
         if connection: connection.close()
