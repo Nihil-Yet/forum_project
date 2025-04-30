@@ -42,7 +42,7 @@ async def create_comment(
         if connection: connection.close()
 
 # получения комментария по id
-@routerComments.post("/comments/{comment_id}/")
+@routerComments.get("/comments/{comment_id}/")
 async def get_comment(comment_id: int):
     connection = None
     try:
