@@ -1,5 +1,6 @@
 # установленные модули
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 # схема юзера для его добавления в БД
 class UserSchema(BaseModel):
@@ -39,7 +40,7 @@ class AddPostSchema(BaseModel):
 class PostSchema(AddPostSchema):
     user_id: int
     comments_num: int
-    # creation_time:
+    creation_time: datetime
 
 class CommentSchema(BaseModel):
     post_id: int

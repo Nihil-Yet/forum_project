@@ -1,5 +1,6 @@
 # установленные модули
 from fastapi import APIRouter, HTTPException, Depends
+from datetime import datetime
 import logging
 
 # собственные модули
@@ -38,10 +39,10 @@ async def create_post(
                     detail = f"User {user_token["id"]} not in group {new_post.group_id}")
 
             await cursor.execute(
-                """INSERT INTO `posts` (user_id, group_id, isUrgently, post_name, post_text) 
-                VALUES (%s, %s, %s, %s, %s)""",
+                """INSERT INTO `posts` (user_id, group_id, isUrgently, post_name, post_text, creation_time) 
+                VALUES (%s, %s, %s, %s, %s, %s)""",
                 (user_token["id"], new_post.group_id, new_post.isUrgently,
-                 new_post.post_name, new_post.post_text,))
+                 new_post.post_name, new_post.post_text, datetime.now()))
             await connection.commit()
             new_post_id = cursor.lastrowid
             return {
