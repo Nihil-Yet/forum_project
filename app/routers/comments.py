@@ -1,5 +1,4 @@
 # установленные модули
-import aiomysql
 from fastapi import APIRouter, HTTPException, Depends
 import logging
 
