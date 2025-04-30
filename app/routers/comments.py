@@ -38,6 +38,7 @@ async def create_comment(
                 """UPDATE `posts` SET `comments_num` += 1 WHERE `id`=%s""",
                 (new_comment.post_id,)
             )
+            await connection.commit()
             return {
                 "message": "Comment create successfully",
                 "comment_id": new_comment_id,
@@ -94,6 +95,11 @@ async def delete_comment(
                     detail = f"User {user_token["id"]} not have enough rights")
 
             await cursor.execute("""DELETE FROM `comments` WHERE `id` = %s""", (comment_id,))
+            await cursor.execute(
+                """UPDATE `posts` SET `comments_num` -= 1 WHERE `id`=%s""",
+                (comment_inf["post_id"],)
+            )
+            await connection.commit()
             await connection.commit()
             return {"message": "comment delete successful"}
     finally:

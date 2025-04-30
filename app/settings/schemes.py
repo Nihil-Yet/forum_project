@@ -39,6 +39,7 @@ class AddPostSchema(BaseModel):
 class PostSchema(AddPostSchema):
     user_id: int
     comments_num: int
+    # creation_time:
 
 class CommentSchema(BaseModel):
     post_id: int
