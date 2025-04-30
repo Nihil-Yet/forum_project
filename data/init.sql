@@ -111,6 +111,8 @@ CREATE TABLE `posts` (
   `isUrgently` tinyint(1) DEFAULT '1',
   `post_name` varchar(255) DEFAULT NULL,
   `post_text` text,
+  `comments_num` int,
+  -- `create_time` 
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`),
