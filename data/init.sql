@@ -79,7 +79,7 @@ CREATE TABLE `posts` (
   `post_name` varchar(255) DEFAULT NULL,
   `post_text` text,
   `comments_num` int DEFAULT 0,
-  `creation_date` DATETIME,
+  `creation_time` DATETIME,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `group_id` (`group_id`),
