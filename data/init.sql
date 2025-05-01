@@ -95,6 +95,7 @@ CREATE TABLE `comments` (
   `user_id` int NOT NULL,
   `post_id` int NOT NULL,
   `comment_text` text,
+  `creation_date` DATETIME,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `post_id` (`post_id`),
