@@ -52,6 +52,29 @@ async def create_post(
     finally:
         if connection: connection.close()
 
+# Создание тега
+@routerPosts.post("/posts/tags/add/{post_id}/{tag_name}/")
+async def add_post_tag(post_id: int, tag_name: str):
+    connection = None
+    try:
+        return {"message": "in progress"}
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute(
+                """SELECT * FROM `tags` WHERE `tag_name` = %s;""", 
+                (tag_name,))
+            if await cursor.fetchone():
+                raise HTTPException(
+                    status_code=409, detail="Tag not found")
+            await cursor.execute(
+                """UPDATE `posts` SET `user_name` = %s WHERE `id` = %s;""",
+                (tag_name)
+            )
+            await connection.commit()
+            return {"message": "tag created success"}
+    finally:
+        if connection: connection.close()
+
 # изменение статуса срочности
 @routerPosts.post("/posts/{post_id}/{isUrgently}/status/")
 async def change_post_status(
