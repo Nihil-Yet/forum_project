@@ -230,6 +230,8 @@ async def get_user_comments(user_id: int):
                 """SELECT * FROM `comments` WHERE `user_id` = %s""",
                 (user_id,))
             user_comments = await cursor.fetchall()
+            if not user_comments:
+                raise HTTPException(status_code = 404, detail = "User's comments not found")
             return user_comments
     finally:
         if connection: connection.close()

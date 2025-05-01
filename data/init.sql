@@ -48,8 +48,8 @@ CREATE TABLE `status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table structure for table `tag`
-DROP TABLE IF EXISTS `tag`;
-CREATE TABLE `tag` (
+DROP TABLE IF EXISTS `tags`;
+CREATE TABLE `tags` (
   `id` int NOT NULL AUTO_INCREMENT,
   `tag_name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
