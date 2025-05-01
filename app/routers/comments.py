@@ -1,5 +1,6 @@
 # установленные модули
 from fastapi import APIRouter, HTTPException, Depends
+from datetime import datetime
 import logging
 
 # собственные модули
@@ -29,9 +30,9 @@ async def create_comment(
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "Post not found")
             await cursor.execute(
-                """INSERT INTO `comments` (user_id, post_id, comment_text) 
-                VALUES (%s, %s, %s);""",
-                (user_token["id"], new_comment.post_id, new_comment.comment_text,))
+                """INSERT INTO `comments` (user_id, post_id, comment_text, creation_time) 
+                VALUES (%s, %s, %s, %s);""",
+                (user_token["id"], new_comment.post_id, new_comment.comment_text, datetime.now()))
             await connection.commit()
             new_comment_id = cursor.lastrowid
             await cursor.execute(
