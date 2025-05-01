@@ -9,6 +9,7 @@ from settings.schemes import PostSchema, AddPostSchema, UserSchema
 
 routerTags = APIRouter()
 
+# Создание тега
 @routerTags.post("/tags/create/{tag_name}/")
 async def create_tag(tag_name: str):
     connection = None
@@ -30,6 +31,7 @@ async def create_tag(tag_name: str):
     finally:
         if connection: connection.close()
 
+# Получение списка всех тегов
 @routerTags.get("/tags/")
 async def get_tags():
     connection = None
