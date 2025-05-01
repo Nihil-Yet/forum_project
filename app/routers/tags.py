@@ -33,7 +33,7 @@ async def get_tags():
             await cursor.execute("""SELECT * FROM `tags`""")
             tags = cursor.fetchall()
             if not tags:
-                raise HTTPException(
-                    status_code=404, detail="Tags not found")
+                raise HTTPException(status_code=404, detail="Tags not found")
+            return tags
     finally:
         if connection: connection.close()
