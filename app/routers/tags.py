@@ -16,11 +16,17 @@ async def create_tag(tag_name: str):
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
-                """SELECT * FROM `tags` WHERE `tag_name` = %s""", 
+                """SELECT * FROM `tags` WHERE `tag_name` = %s;""", 
                 (tag_name,))
             if await cursor.fetchone():
                 raise HTTPException(
                     status_code=409, detail="This tag alredy exist")
+            await cursor.execute(
+                """INSERT INTO `tags` (tag_name) VALUES (%s);""",
+                (tag_name)
+            )
+            await connection.commit()
+            return {"message": "tag created success"}
     finally:
         if connection: connection.close()
 
@@ -30,10 +36,10 @@ async def get_tags():
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `tags`""")
-            tags = cursor.fetchall()
-            if not tags:
-                raise HTTPException(status_code=404, detail="Tags not found")
-            return tags
+            await cursor.execute("""SELECT * FROM `tags`;""")
+            query_result = await cursor.fetchall()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = "tags are not found")
+            return query_result
     finally:
         if connection: connection.close()
