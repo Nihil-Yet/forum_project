@@ -118,19 +118,22 @@ async def joining_member(
 
 # функция выхода из группы
 @routerGroups.post("/groups/members/left/")
-async def left_member(left_member: LeftGroupMember):
+async def left_member(
+    left_member: LeftGroupMember,
+    user_token: UserSchema = Depends(get_jwt_payload)
+    ):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
                 """SELECT `id` FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s;""",
-                (left_member.user_id, left_member.group_id,))
+                (user_token["user_id"], left_member.group_id,))
             isUser = await cursor.fetchone()
             if not isUser:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"User with id = {left_member.user_id} not found in group with id = {left_member.group_id} or this group not exist")
+                    detail=f"User with id = {user_token["user_id"]} not found in group with id = {left_member.group_id} or this group not exist")
             await cursor.execute(
                 """DELETE FROM `user_group` WHERE `id` = %s""",
                 (isUser["id"],))

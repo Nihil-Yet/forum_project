@@ -28,7 +28,6 @@ class JoinGroupMember(BaseModel):
     role_id: int = 3
 
 class LeftGroupMember(BaseModel):
-    user_id: int
     group_id: int
 
 class AddPostSchema(BaseModel):
