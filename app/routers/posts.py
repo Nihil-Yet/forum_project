@@ -160,8 +160,12 @@ async def get_post_tags(post_id: int):
                 raise HTTPException(
                     status_code=404, detail="Post not found")
             await cursor.execute(
-                """SELECT * FROM `tag_post` WHERE `post_id` = %s;""", 
-                (post_id))
+                """SELECT tp.id, tp.tag_id, tp.post_id, t.tag_name
+                FROM tag_post tp
+                JOIN `tags` t ON tp.tag_id = t.id
+                WHERE tp.post_id = %s""",
+                (post_id,)
+            )
             post_tags = await cursor.fetchone()
             if not post_tags:
                 raise HTTPException(
