@@ -27,7 +27,7 @@ async def create_tag(tag_name: str):
                 (tag_name)
             )
             await connection.commit()
-            return {"message": "tag created success"}
+            return {"message": "tag created successfully"}
     finally:
         if connection: connection.close()
 
