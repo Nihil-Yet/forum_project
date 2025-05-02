@@ -36,7 +36,7 @@ async def create_comment(
             await connection.commit()
             new_comment_id = cursor.lastrowid
             await cursor.execute(
-                """UPDATE `posts` SET `comments_num` += 1 WHERE `id`=%s""",
+                """UPDATE `posts` SET `comments_num` = `comments_num` + 1 WHERE `id`=%s""",
                 (new_comment.post_id,)
             )
             await connection.commit()
@@ -97,7 +97,7 @@ async def delete_comment(
 
             await cursor.execute("""DELETE FROM `comments` WHERE `id` = %s""", (comment_id,))
             await cursor.execute(
-                """UPDATE `posts` SET `comments_num` -= 1 WHERE `id`=%s""",
+                """UPDATE `posts` SET `comments_num` = `comments_num` - 1 WHERE `id`=%s""",
                 (comment_inf["post_id"],)
             )
             await connection.commit()
