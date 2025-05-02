@@ -21,7 +21,7 @@ async def create_tag(tag_name: str):
                     status_code=409, detail="This tag alredy exist")
             await cursor.execute(
                 """INSERT INTO `tags` (tag_name) VALUES (%s);""",
-                (tag_name)
+                (tag_name,)
             )
             await connection.commit()
             return {"message": "tag created successfully"}
