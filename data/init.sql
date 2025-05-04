@@ -151,14 +151,10 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'Test','TestUser','$2b$12$juBfEwfJBaaadgQDy4j6/u773xsE9UxexSyQZJqOYD6GDCn/kLGI2',0);
 UNLOCK TABLES;
 
--- Данные для `posts`
-LOCK TABLES `posts` WRITE;
-INSERT INTO `posts` VALUES (2,20,1,1,'Test Post','Post for test create_post func');
-UNLOCK TABLES;
-
--- Данные для `user_group`
-LOCK TABLES `user_group` WRITE;
-INSERT INTO `user_group` VALUES (8,20,4,3);
+-- Данные для `tags`
+LOCK TABLES `tags` WRITE;
+INSERT INTO `tags` VALUES (1,'сессия'),(2,'студжизнь'),(3,'общежитие'),
+(4,'стипендия'),(5,'лабы'),(6,'расписание'),(7,'преподаватели'),(8,'диплом'),(9,'практика');
 UNLOCK TABLES;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
