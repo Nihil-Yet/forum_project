@@ -1,21 +1,13 @@
 # установленные модули
 from pydantic import BaseModel
 from pathlib import Path
-import socket
 
 # путь к main/
 BASE_DIR = Path(__file__).parent.parent
 
-def is_host_reachable(host):
-    try:
-        socket.gethostbyname(host)
-        return True
-    except socket.error:
-        return False
-
 # настройки для создания БД
 class DBSettings(BaseModel):
-    host: str = "db-forum" if is_host_reachable("db-forum") else "localhost"
+    host: str = "db-forum"
     port: int = 3306
     user: str = "data_admin"
     password: str = "data_admin"
