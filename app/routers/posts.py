@@ -143,10 +143,12 @@ async def get_posts_by_tag(tag_id: int):
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
-                """SELECT posts.*
-                FROM posts
-                INNER JOIN tag_post ON posts.id = tag_post.post_id
-                WHERE tag_post.tag_id = %s;""",
+                """SELECT p.*, u.user_name
+                FROM posts p
+                JOIN users u ON p.user_id = u.id
+                JOIN tag_post tp ON p.id = tp.post_id
+                WHERE tp.tag_id = %s
+                ORDER BY p.isUrgently DESC, p.creation_time ASC;""",
                 (tag_id,))
             query_result = await cursor.fetchall()
             if not query_result:
