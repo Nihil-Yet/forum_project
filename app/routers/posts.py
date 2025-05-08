@@ -205,7 +205,9 @@ async def get_post_comments(post_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s""", (post_id,))
+            await cursor.execute(
+                """SELECT * FROM `posts` WHERE `id` = %s
+                ORDER BY `creation_time` ASC""", (post_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "Post not found")
             await cursor.execute("""SELECT * FROM `comments` WHERE `post_id` = %s""",

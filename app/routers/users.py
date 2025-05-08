@@ -228,7 +228,8 @@ async def get_user_comments(user_id: int):
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
             await cursor.execute(
-                """SELECT * FROM `comments` WHERE `user_id` = %s""",
+                """SELECT * FROM `comments` WHERE `user_id` = %s
+                ORDER BY `creation_time` ASC""",
                 (user_id,))
             user_comments = await cursor.fetchall()
             if not user_comments:
