@@ -30,6 +30,17 @@ CREATE TABLE `group_role` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table structure for table `groups`
+DROP TABLE IF EXISTS `moderated_groups`;
+CREATE TABLE `moderated_groups` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(255) DEFAULT NULL,
+  `description` text,
+  `photo` varchar(256) DEFAULT NULL,
+  `is_approved` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table structure for table `groups`
 DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -63,7 +74,7 @@ CREATE TABLE `users` (
   `user_name` varchar(255) NOT NULL,
   `login` varchar(255) NOT NULL,
   `password` varchar(1024) DEFAULT NULL,
-  `is_student` tinyint(1) DEFAULT NULL,
+  `is_student` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_login` (`login`)
 ) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
