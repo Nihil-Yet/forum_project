@@ -30,17 +30,6 @@ CREATE TABLE `group_role` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table structure for table `groups`
-DROP TABLE IF EXISTS `moderated_groups`;
-CREATE TABLE `moderated_groups` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `group_name` varchar(255) DEFAULT NULL,
-  `description` text,
-  `photo` varchar(256) DEFAULT NULL,
-  `is_approved` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Table structure for table `groups`
 DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -144,6 +133,20 @@ CREATE TABLE `user_group` (
   CONSTRAINT `user_group_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_group_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table structure for table `groups`
+DROP TABLE IF EXISTS `moderated_groups`;
+CREATE TABLE `moderated_groups` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(255) DEFAULT NULL,
+  `description` text,
+  `photo` varchar(256) DEFAULT NULL,
+  `creator_id` int NOT NULL,
+  `is_approved` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `creator_id` (`creator_id`),
+  CONSTRAINT `creator_id` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Вставляем тестовые данные (убедитесь, что порядок вставки тоже учитывает зависимости)
 -- ------------------------------------------------------
