@@ -23,7 +23,7 @@ services:
       - db-forum
     environment:
       DB_HOST: db-forum
-      DB_PORT: 3307
+      DB_PORT: 3306
       DB_NAME: db_forum
       DB_USER: data_admin
       DB_PASSWORD: data_admin
