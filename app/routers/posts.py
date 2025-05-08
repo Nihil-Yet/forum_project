@@ -210,8 +210,13 @@ async def get_post_comments(post_id: int):
                 ORDER BY `creation_time` ASC""", (post_id,))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "Post not found")
-            await cursor.execute("""SELECT * FROM `comments` WHERE `post_id` = %s""",
-                                 (post_id,))
+            await cursor.execute(
+                """SELECT c.*, u.user_name
+                FROM `comments` c
+                JOIN `users` u ON c.user_id = u.id
+                WHERE c.post_id = %s
+                ORDER BY c.creation_time ASC""",
+                (post_id,))
             post_comments = await cursor.fetchall()
             return post_comments
     finally:
