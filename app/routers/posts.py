@@ -25,11 +25,12 @@ async def create_post(
                 (user_token["id"],))
             if not await cursor.fetchone():
                 raise HTTPException(status_code = 404, detail = "User not found")
-            await cursor.execute(
-                """SELECT * FROM `groups` WHERE `id` = %s""",
-                (new_post.group_id,))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code = 404, detail = "Group not found")
+            if new_post.group_id != 0:
+                await cursor.execute(
+                    """SELECT * FROM `groups` WHERE `id` = %s""",
+                    (new_post.group_id,))
+                if not await cursor.fetchone():
+                    raise HTTPException(status_code = 404, detail = "Group not found")
             await cursor.execute(
                 """SELECT * FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s""",
                 (user_token["id"], new_post.group_id))
