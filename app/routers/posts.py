@@ -117,7 +117,7 @@ async def change_post_status(
     finally:
         if connection: connection.close()
 
-# получение информации обовсех постах
+# получение информации обо всех постах
 @routerPosts.get("/posts/")
 async def get_posts():
     connection = None
@@ -125,6 +125,26 @@ async def get_posts():
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute("""SELECT * FROM `posts`;""")
+            query_result = await cursor.fetchall()
+            if not query_result:
+                raise HTTPException(status_code = 404, detail = "Posts not found")
+            return query_result
+    finally:
+        if connection: connection.close()
+
+# получение информации обо всех постах
+@routerPosts.get("/posts/{tag_id}")
+async def get_posts_by_tag(tag_id: int):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute(
+                """SELECT posts.*
+                FROM posts
+                INNER JOIN tag_post ON posts.id = tag_post.post_id
+                WHERE tag_post.tag_id = %s;""",
+                (tag_id,))
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Posts not found")
