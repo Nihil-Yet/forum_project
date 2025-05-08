@@ -36,7 +36,7 @@ async def create_comment(
             await connection.commit()
             new_comment_id = cursor.lastrowid
             await cursor.execute(
-                """UPDATE `posts` SET `comments_num` = `comments_num` + 1 WHERE `id`=%s""",
+                """UPDATE `posts` SET `comments_num` = `comments_num` + 1, `isUrgently` = 0 WHERE `id`=%s""",
                 (new_comment.post_id,)
             )
             await connection.commit()
