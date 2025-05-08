@@ -125,7 +125,9 @@ async def get_posts():
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts`;""")
+            await cursor.execute(
+                """SELECT * FROM `posts`
+                ORDER BY `creation_time` ASC, `isUrgently` DESC;""")
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Posts not found")
