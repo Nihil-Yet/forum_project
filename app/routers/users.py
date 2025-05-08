@@ -204,7 +204,7 @@ async def get_user_posts(user_id: int):
         async with connection.cursor() as cursor:
             await cursor.execute(
                 """SELECT * FROM `posts` WHERE `user_id` = %s
-                ORDER BY `creation_time` DESC, `isUrgently` DESC;""", 
+                ORDER BY `creation_time` ASC, `isUrgently` DESC;""", 
                 (user_id,))
             query_result = await cursor.fetchall()
             if not query_result:
