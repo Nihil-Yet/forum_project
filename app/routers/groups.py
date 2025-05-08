@@ -178,8 +178,11 @@ async def get_group_posts(group_id: int):
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
-                """SELECT * FROM `posts` WHERE `group_id` = %s
-                ORDER BY `creation_time` ASC, `isUrgently` DESC;""",
+                """SELECT p.*, u.user_name
+                FROM `posts` p
+                JOIN `users` u ON p.user_id = u.id
+                WHERE `group_id` = %s
+                ORDER BY p.isUrgently DESC, p.creation_time ASC;""",
                 (group_id,))
             query_result = await cursor.fetchall()
             if not query_result:
