@@ -166,7 +166,12 @@ async def get_post(post_id: int):
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute("""SELECT * FROM `posts` WHERE `id` = %s;""", (post_id))
+            await cursor.execute(
+                """SELECT p.*, u.user_name
+                FROM `posts` p
+                JOIN `users` u ON p.user_id = u.id
+                WHERE p.id = %s;""",
+                (post_id))
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code = 404, detail = "Post not found")
