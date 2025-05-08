@@ -74,7 +74,7 @@ DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
-  `group_id` int NOT NULL,
+  `group_id` int NULL,
   `isUrgently` tinyint(1) DEFAULT '1',
   `post_name` varchar(255) DEFAULT NULL,
   `post_text` text,
