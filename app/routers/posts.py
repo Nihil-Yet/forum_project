@@ -31,14 +31,15 @@ async def create_post(
                     (new_post.group_id,))
                 if not await cursor.fetchone():
                     raise HTTPException(status_code = 404, detail = "Group not found")
-            await cursor.execute(
+                await cursor.execute(
                 """SELECT * FROM `user_group` WHERE `user_id` = %s AND `group_id` = %s""",
                 (user_token["id"], new_post.group_id))
-            if not await cursor.fetchone():
-                raise HTTPException(
-                    status_code = 404,
-                    detail = f"User {user_token["id"]} not in group {new_post.group_id}")
-
+                if not await cursor.fetchone():
+                    raise HTTPException(
+                        status_code = 404,
+                        detail = f"User {user_token["id"]} not in group {new_post.group_id}")
+            if new_post.group_id == 0:
+                new_post.group_id = None
             await cursor.execute(
                 """INSERT INTO `posts` (user_id, group_id, isUrgently, post_name, post_text, creation_time) 
                 VALUES (%s, %s, %s, %s, %s, %s)""",
