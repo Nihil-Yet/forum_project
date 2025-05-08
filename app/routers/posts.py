@@ -199,7 +199,7 @@ async def get_post_tags(post_id: int):
                 WHERE tp.post_id = %s""",
                 (post_id,)
             )
-            post_tags = await cursor.fetchone()
+            post_tags = await cursor.fetchall()
             if not post_tags:
                 raise HTTPException(
                     status_code=404, detail="Tags not found")
