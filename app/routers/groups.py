@@ -42,6 +42,37 @@ async def add_group(
     finally:
         if connection: connection.close()
 
+# функция добавления группы
+@routerGroups.post("/groups/moderated/create/")
+async def moderated_add_group(
+    new_group: GroupSchema,
+    user_token: UserSchema = Depends(get_jwt_payload)
+    ):
+    connection = None
+    try:
+        connection = await database_connect()
+        async with connection.cursor() as cursor:
+            await cursor.execute("""SELECT `id` FROM `groups` WHERE `group_name` = %s""",
+                                 (new_group.group_name))
+            group_exist = await cursor.fetchone()
+            if group_exist:
+                raise HTTPException(status_code=409, detail="This group name already used")
+            await cursor.execute("""INSERT INTO `groups` (group_name, description) VALUES (%s, %s);""", 
+                                 (new_group.group_name, new_group.description))
+            await connection.commit()
+            new_group_id = cursor.lastrowid
+            await cursor.execute("""INSERT INTO `user_group` (user_id, group_id, role_id) VALUES (%s, %s, %s);""",
+                                 (user_token["id"], new_group_id, 1,))
+            await connection.commit()
+            return {
+                "message": "Group added succesfully",
+                "group_id": new_group_id,
+                }
+    except aiomysql.MySQLError as ex:
+        logging.error(f"{ex}")
+    finally:
+        if connection: connection.close()
+
 # функция получения информации о всех существующих группах
 @routerGroups.get("/groups/")
 async def get_groups():
