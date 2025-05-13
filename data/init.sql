@@ -15,11 +15,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Создаём БД (если её нет)
+-- Создаём БД
 CREATE DATABASE IF NOT EXISTS `db_forum`;
 USE `db_forum`;
 
--- 1. Таблицы БЕЗ зависимостей (создаются первыми)
 -- ------------------------------------------------------
 -- Table structure for table `group_role`
 DROP TABLE IF EXISTS `group_role`;
@@ -55,7 +54,7 @@ CREATE TABLE `tags` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 2. Таблица `users` (должна быть создана до `posts`, `comments`, `user_group`)
+-- 2. Таблица `users`
 -- ------------------------------------------------------
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -68,7 +67,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `unique_login` (`login`)
 ) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 3. Таблица `posts` (зависит от `users` и `groups`)
+-- 3. Таблица `posts`
 -- ------------------------------------------------------
 DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
@@ -87,7 +86,7 @@ CREATE TABLE `posts` (
   CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 4. Таблица `comments` (зависит от `users` и `posts`)
+-- 4. Таблица `comments`
 -- ------------------------------------------------------
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
@@ -103,7 +102,7 @@ CREATE TABLE `comments` (
   CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 5. Таблица `tag_post` (зависит от `tag` и `posts`)
+-- 5. Таблица `tag_post`
 -- ------------------------------------------------------
 DROP TABLE IF EXISTS `tag_post`;
 CREATE TABLE `tag_post` (
@@ -117,7 +116,7 @@ CREATE TABLE `tag_post` (
   CONSTRAINT `tag_post_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 6. Таблица `user_group` (зависит от `users`, `groups`, `group_role`)
+-- 6. Таблица `user_group`
 -- ------------------------------------------------------
 DROP TABLE IF EXISTS `user_group`;
 CREATE TABLE `user_group` (
@@ -148,7 +147,7 @@ CREATE TABLE `moderated_groups` (
   CONSTRAINT `creator_id` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Вставляем тестовые данные (убедитесь, что порядок вставки тоже учитывает зависимости)
+-- Вставляем данные
 -- ------------------------------------------------------
 -- Данные для `group_role`
 LOCK TABLES `group_role` WRITE;
