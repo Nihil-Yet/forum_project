@@ -1,7 +1,6 @@
 # установленные модули
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from datetime import datetime
-import logging
 
 # собственные модули
 from settings.database import database_connect
@@ -137,24 +136,28 @@ async def get_posts():
     finally:
         if connection: connection.close()
 
-# получение информации обо всех постах
-@routerPosts.get("/posts/{tag_id}")
-async def get_posts_by_tag(tag_id: int):
+# получение постов по тегам
+@routerPosts.get("/posts/by_tags")
+async def get_posts_by_tags(tag_ids: list[int] = Query(...)):
     connection = None
     try:
         connection = await database_connect()
         async with connection.cursor() as cursor:
-            await cursor.execute(
-                """SELECT p.*, u.user_name
+            tag_placeholders = ','.join(['%s'] * len(tag_ids))
+            query = f"""
+                SELECT p.*, u.user_name
                 FROM posts p
                 JOIN users u ON p.user_id = u.id
                 JOIN tag_post tp ON p.id = tp.post_id
-                WHERE tp.tag_id = %s
-                ORDER BY p.isUrgently DESC, p.creation_time ASC;""",
-                (tag_id,))
+                WHERE tp.tag_id IN ({tag_placeholders})
+                GROUP BY p.id, u.user_name
+                HAVING COUNT(DISTINCT tp.tag_id) = %s
+                ORDER BY p.isUrgently DESC, p.creation_time ASC;
+            """
+            await cursor.execute(query, (*tag_ids, len(tag_ids)))
             query_result = await cursor.fetchall()
             if not query_result:
-                raise HTTPException(status_code = 404, detail = "Posts not found")
+                raise HTTPException(status_code=404, detail="Posts not found")
             return query_result
     finally:
         if connection: connection.close()
