@@ -137,7 +137,7 @@ async def get_posts():
         if connection: connection.close()
 
 # получение постов по тегам
-@routerPosts.get("/posts/by_tags")
+@routerPosts.get("/posts/by_tags.")
 async def get_posts_by_tags(tag_ids: list[int] = Query(...)):
     connection = None
     try:
