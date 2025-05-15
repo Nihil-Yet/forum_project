@@ -90,7 +90,7 @@ async def delete_comment(
             user_role = await cursor.fetchone()
             if not user_role:
                 raise HTTPException(status_code=403, detail="User not in the group")
-            if not (post_inf["user_id"] == user_token["id"] or user_role["role_id"] in (1, 2)):
+            if not (comment_inf["user_id"] == user_token["id"] or user_role["role_id"] in (1, 2)):
                 raise HTTPException(
                     status_code = 403,
                     detail = f"User {user_token["id"]} not have enough rights")
