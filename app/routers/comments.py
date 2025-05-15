@@ -73,7 +73,9 @@ async def delete_comment(
         connection = await database_connect()
         async with connection.cursor() as cursor:
             await cursor.execute(
-                """SELECT * FROM `comments` WHERE `id` = %s""", (comment_id,))
+                """SELECT `user_id`, `post_id`
+                FROM `comments` WHERE `id` = %s;""",
+                (comment_id,))
             comment_inf = await cursor.fetchone()
             if not comment_inf:
                 raise HTTPException(status_code = 404, detail = "Comment not found")
