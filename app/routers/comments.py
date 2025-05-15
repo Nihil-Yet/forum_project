@@ -77,23 +77,24 @@ async def delete_comment(
             comment_inf = await cursor.fetchone()
             if not comment_inf:
                 raise HTTPException(status_code = 404, detail = "Comment not found")
-            await cursor.execute(
-                """SELECT `group_id` FROM `posts` WHERE `id` = %s""",
-                (comment_inf["post_id"],))
-            post_inf = await cursor.fetchone()
-            if not post_inf:
-                raise HTTPException(status_code = 404, detail = "Post not found")
-            await cursor.execute(
-                """SELECT `role_id` 
-                FROM `user_group` WHERE `group_id` = %s AND `user_id` = %s""",
-                (post_inf["group_id"], user_token["id"],))
-            user_role = await cursor.fetchone()
-            if not user_role:
-                raise HTTPException(status_code=403, detail="User not in the group")
-            if not (comment_inf["user_id"] == user_token["id"] or user_role["role_id"] in (1, 2)):
-                raise HTTPException(
-                    status_code = 403,
-                    detail = f"User {user_token["id"]} not have enough rights")
+            if comment_inf["user_id"] != user_token["id"]:
+                await cursor.execute(
+                    """SELECT `group_id` FROM `posts` WHERE `id` = %s""",
+                    (comment_inf["post_id"],))
+                post_inf = await cursor.fetchone()
+                if not post_inf:
+                    raise HTTPException(status_code = 404, detail = "Post not found")
+                await cursor.execute(
+                    """SELECT `role_id` 
+                    FROM `user_group` WHERE `group_id` = %s AND `user_id` = %s""",
+                    (post_inf["group_id"], user_token["id"],))
+                user_role = await cursor.fetchone()
+                if not user_role:
+                    raise HTTPException(status_code=403, detail="User not in the group")
+                if not (user_role["role_id"] in (1, 2)):
+                    raise HTTPException(
+                        status_code = 403,
+                        detail = f"User {user_token["id"]} not have enough rights")
 
             await cursor.execute("""DELETE FROM `comments` WHERE `id` = %s""", (comment_id,))
             await cursor.execute(
