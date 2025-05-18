@@ -148,19 +148,21 @@ async def get_posts_by_tags(tag_ids: list[int] = Query(...)):
                 SELECT p.*, u.user_name
                 FROM posts p
                 JOIN users u ON p.user_id = u.id
-                JOIN tag_post tp ON p.id = tp.post_id
-                WHERE tp.tag_id IN ({tag_placeholders})
-                GROUP BY p.id, u.user_name
-                HAVING COUNT(DISTINCT tp.tag_id) = %s
-                ORDER BY p.isUrgently DESC, p.creation_time ASC;
-            """
+                WHERE p.id IN (
+                    SELECT tp.post_id
+                    FROM tag_post tp
+                    WHERE tp.tag_id IN ({tag_placeholders})
+                    GROUP BY tp.post_id
+                    HAVING COUNT(DISTINCT tp.tag_id) = %s
+                )
+                ORDER BY p.isUrgently DESC, p.creation_time ASC;"""
             await cursor.execute(query, (*tag_ids, len(tag_ids)))
             query_result = await cursor.fetchall()
             if not query_result:
                 raise HTTPException(status_code=404, detail="Posts not found")
             return query_result
     finally:
-        if connection: connection.close()
+        if connection: await connection.close()
 
 # информация о посте
 @routerPosts.get("/posts/{post_id}/")
