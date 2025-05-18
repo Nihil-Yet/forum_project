@@ -162,7 +162,7 @@ async def get_posts_by_tags(tag_ids: list[int] = Query(...)):
                 raise HTTPException(status_code=404, detail="Posts not found")
             return query_result
     finally:
-        if connection: await connection.close()
+        if connection: connection.close()
 
 # информация о посте
 @routerPosts.get("/posts/{post_id}/")
