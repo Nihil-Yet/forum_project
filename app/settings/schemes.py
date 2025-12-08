@@ -6,7 +6,7 @@ from datetime import datetime
 class UserSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=255)
     login: str = Field(min_length=1, max_length=255)
-    is_studen: bool = False
+    is_student: bool = False
 
 class AddUserSchema(UserSchema):
     password: str = Field(min_length=8, max_length=100)
