@@ -34,7 +34,7 @@ async def add_user(new_user: AddUserSchema):
                 "id": new_user_id,
                 "login": new_user.login,
                 "username": new_user.user_name.strip().title(),
-                "is_student": new_user.is_studen,
+                "is_student": new_user.is_student,
                 }
             token = auth_utils.encode_JWT(jwt_payload)
             return {
