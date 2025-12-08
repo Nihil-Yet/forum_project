@@ -26,7 +26,7 @@ async def add_user(new_user: AddUserSchema):
             hash_pass = auth_utils.hash_password(new_user.password)
             await cursor.execute(
                 """INSERT INTO `users` (user_name, login, password, is_student) VALUES (%s, %s, %s, %s)""",
-                (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_studen))
+                (new_user.user_name.strip().title(), new_user.login, hash_pass, new_user.is_student))
             await connection.commit()
             new_user_id = cursor.lastrowid
             jwt_payload = {
